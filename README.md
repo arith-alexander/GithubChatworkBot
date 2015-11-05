@@ -15,7 +15,7 @@ For testing environment you can use ngrok to make server available from internet
 ./ngrok http 8000
 </pre>
 
-### Class usage:
+## Class usage:
 Creating instance:
 <pre>
 botInstance = GithubChatworkBot()
