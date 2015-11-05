@@ -6,6 +6,7 @@ Webhook config (go to Github repository configuration page and open "Webhooks & 
 - Payload url - set to url, where GithubChatworkBot.execute() method is called;
 - Content type - application/x-www-form-urlencoded
 - Select individual events - Commit comment, Issues, Pull Request, Issue comment, Pull Request review comment
+
 To start cgi http server execute this in server home folder (i.e. folder, that contains "cgi-bin" folder):
 <pre>
 python3 -m http.server --cgi
