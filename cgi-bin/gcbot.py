@@ -7,6 +7,7 @@ import urllib  # to dictionary urlencode
 import cgi  # to get POST fields from Github
 import json  # to convert payload from json to dictionary
 import logging  # log handling
+import re
 
 class GithubChatworkBot:
     """
@@ -235,6 +236,21 @@ class GithubChatworkBot:
             '[info][title]Commit Commented ' + self.payload['comment']['html_url'] + '[/title]' + \
             str(self.payload['comment']['body'][:self.chatwork_message_max_len]) + dots + '[/info]'
 
+    def _buildPRAssignedMessage(self):
+        """
+        Build message content, corresponding to github "Issue assigned" event.
+        To: issue assignee.
+        """
+        dots = ''
+        if len(self.payload['pull_request']['body']) > self.chatwork_message_max_len:
+            dots = '\n...'
+
+        return self._buildAddresseeString([self.payload['assignee']['login']]) + \
+            '[info][title]PR Assigned to ' + self.payload['assignee']['login'] + ' ' + \
+            self.payload['pull_request']['html_url'] + '[/title]' + \
+            str(self.payload['pull_request']['title']) + '\n\n' + \
+            str(self.payload['pull_request']['body'][:self.chatwork_message_max_len]) + dots + '[/info]'
+
     def _send(self, body):
         """
         Sending POST request to Chatwork with Curl
@@ -259,24 +275,30 @@ class GithubChatworkBot:
         if not self.chatwork_token:
             self._log('Execution failed: chatwork token not set.', 'CRITICAL')
 
+        body = ''
         if self.payload['action'] == 'created' and 'issue' in self.payload.keys():
-            self._send(self._buildIssueCommentedMessage())
+            body = self._buildIssueCommentedMessage()
         elif self.payload['action'] == 'opened' and 'issue' in self.payload.keys():
-            self._send(self._buildIssueOpenedMessage())
+            body = self._buildIssueOpenedMessage()
         elif self.payload['action'] == 'assigned' and 'issue' in self.payload.keys():
-            self._send(self._buildIssueAssignedMessage())
+            body = self._buildIssueAssignedMessage()
         elif self.payload['action'] == 'closed' and 'issue' in self.payload.keys():
-            self._send(self._buildIssueClosedMessage())
+            body = self._buildIssueClosedMessage()
         elif self.payload['action'] == 'opened' and 'pull_request' in self.payload.keys():
-            self._send(self._buildPROpenedMessage())
+            body = self._buildPROpenedMessage()
         elif self.payload['action'] == 'closed' and 'pull_request' in self.payload.keys():
-            self._send(self._buildPRClosedMessage())
+            body = self._buildPRClosedMessage()
         elif self.payload['action'] == 'created' and 'pull_request' in self.payload.keys():
-            self._send(self._buildPRCommentedMessage())
+            body = self._buildPRCommentedMessage()
+        elif self.payload['action'] == 'assigned' and 'pull_request' in self.payload.keys():
+            body = self._buildPRAssignedMessage()
         elif self.payload['action'] == 'created' and 'comment' in self.payload.keys():
-            self._send(self._buildCommitCommentedMessage())
+            body = self._buildCommitCommentedMessage()
         else:
             self._log('Execution failed: event handler is not set.', 'CRITICAL')
+
+        # body = body.replace('```', )
+        self._send(body)
 
     def _log(self, text, level):
         """

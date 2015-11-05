@@ -5,9 +5,9 @@
 # See detailed documentation inside gcbot.py script.
 
 # todo send messages from one repo to several rooms
-# todo create repo
 # todo """ to [code][/code]
 # todo heya to repo tuika
+
 
 import cgitb  # error handling
 import gcbot # GithubChatworkBot class
