@@ -273,8 +273,8 @@ class GithubChatworkBot:
             self._send(self._buildPRClosedMessage())
         elif self.payload['action'] == 'created' and 'pull_request' in self.payload.keys():
             self._send(self._buildPRCommentedMessage())
-        # if self.payload['action'] == 'created' and 'comment' in self.payload.keys():
-        #     self._send(self._buildCommitCommentedMessage())
+        elif self.payload['action'] == 'created' and 'comment' in self.payload.keys():
+            self._send(self._buildCommitCommentedMessage())
         else:
             self._log('Execution failed: event handler is not set.', 'CRITICAL')
 
