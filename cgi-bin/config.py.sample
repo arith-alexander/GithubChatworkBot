@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding: utf-8
 
 # Global configuration file for GithubChatworkBot.
 # See detailed documentation inside gcbot.py script.

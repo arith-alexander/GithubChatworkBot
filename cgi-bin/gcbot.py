@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding: utf-8
 
 # Dependencies of GithubChatworkBot class
 import sys

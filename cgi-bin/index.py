@@ -1,10 +1,9 @@
 #!/usr/bin/env python
+# coding: utf-8
 
 # Bot entry script.
 # Set url to this script as "Payload url" on Github repository configuration page "Webhooks & Services" tab.
 # See detailed documentation inside gcbot.py script.
-
-# todo send messages from one repo to several rooms
 
 import cgitb  # error handling
 import gcbot # GithubChatworkBot class
