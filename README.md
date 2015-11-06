@@ -16,7 +16,7 @@ For testing environment you can use ngrok to make server available from internet
 ./ngrok http 8000
 </pre>
 
-Rename cgi-bin/config.py.sample to cgi-bin/config.py and set required configuration.
+Rename cgi-bin/config.py.sample to cgi-bin/config.py and set required configuration. Rename logs/log.txt.sample to logs/log.txt and add write rights.
 
 ## Class usage:
 Creating instance:
