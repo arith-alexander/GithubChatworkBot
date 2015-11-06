@@ -28,10 +28,10 @@ class GithubChatworkBot:
     botInstance = GithubChatworkBot()
 
     # Setting chatwork room id, where messages goes, and corresponding repository names.
-    # Example below means, that events from repository somerepo goes to chatwork room 36410221
-    # and events from moreonerepo goes to room 34543645
+    # Example below means, that events from repository somerepo goes to chatwork room 36410221 and 34543645,
+    # also events from moreonerepo goes to room 34543645.
     # Do not forget to add bot to all rooms and configure webhooks on all repositories!!
-    botInstance.repository_room_map = {"somerepo": "36410221", "moreonerepo": "34543645"}
+    botInstance.repository_room_map = {"somerepo": ["36410221", "34543645"], "moreonerepo": ["34543645"]}
 
     # Setting chatwork API token
     botInstance.chatwork_token = "4033...12c7"
@@ -123,146 +123,120 @@ class GithubChatworkBot:
         Build message content, corresponding to github "Issue commented" event.
         To: issue assignee, issue author and @username.
         """
-        dots = ''
-        if len(self.payload['comment']['body']) > self.chatwork_message_max_len:
-            dots = '\n...'
-
         to_list = [self.payload['issue']['user']['login']]
+
         if self.payload['issue']['assignee']:
             if self.payload['issue']['assignee']['login'] != self.payload['issue']['user']['login']:
                 to_list.append(self.payload['issue']['assignee']['login'])
 
         return self._buildAddresseeString(to_list, self.payload['comment']['body']) + \
             '[info][title]Issue Commented ' + self.payload['comment']['html_url'] + '[/title]' + \
-            str(self.payload['comment']['body'][:self.chatwork_message_max_len]) + dots + '[/info]'
+            self._filterInnerContent(self.payload['comment']['body']) + '[/info]'
 
     def _buildIssueOpenedMessage(self):
         """
         Build message content, corresponding to github "Issue opened" event
         To all.
         """
-        dots = ''
-        if len(self.payload['issue']['body']) > self.chatwork_message_max_len:
-            dots = '\n...'
-
         return '[info][title]Issue Opened ' + self.payload['issue']['html_url'] + '[/title]' + \
             str(self.payload['issue']['title']) + '\n\n' + \
-            str(self.payload['issue']['body'][:self.chatwork_message_max_len]) + dots + '[/info]'
+            self._filterInnerContent(self.payload['issue']['body']) + '[/info]'
 
     def _buildIssueAssignedMessage(self):
         """
         Build message content, corresponding to github "Issue assigned" event.
         To: issue assignee.
         """
-        dots = ''
-        if len(self.payload['issue']['body']) > self.chatwork_message_max_len:
-            dots = '\n...'
+        to_list = [self.payload['assignee']['login']]
 
-        return self._buildAddresseeString([self.payload['assignee']['login']]) + \
+        return self._buildAddresseeString(guthub_addressee_list=to_list) + \
             '[info][title]Issue Assigned to ' + self.payload['assignee']['login'] + ' ' + \
             self.payload['issue']['html_url'] + '[/title]' + \
             str(self.payload['issue']['title']) + '\n\n' + \
-            str(self.payload['issue']['body'][:self.chatwork_message_max_len]) + dots + '[/info]'
+            self._filterInnerContent(self.payload['issue']['body']) + '[/info]'
 
     def _buildIssueClosedMessage(self):
         """
         Build message content, corresponding to github "Issue closed" event.
         To: issue assignee and issue author.
         """
-        dots = ''
-        if len(self.payload['issue']['body']) > self.chatwork_message_max_len:
-            dots = '\n...'
-
         to_list = [self.payload['issue']['user']['login']]
         if self.payload['issue']['assignee']:
             if self.payload['issue']['assignee']['login'] != self.payload['issue']['user']['login']:
                 to_list.append(self.payload['issue']['assignee']['login'])
 
-        return self._buildAddresseeString(to_list) + \
+        return self._buildAddresseeString(guthub_addressee_list=to_list) + \
             '[info][title]Issue Closed ' + self.payload['issue']['html_url'] + '[/title]' + \
             str(self.payload['issue']['title']) + '\n\n' + \
-            str(self.payload['issue']['body'][:self.chatwork_message_max_len]) + dots + '[/info]'
+            self._filterInnerContent(self.payload['issue']['body']) + '[/info]'
 
     def _buildPROpenedMessage(self):
         """
         Build message content, corresponding to github "PR opened" event.
         To all.
         """
-        dots = ''
-        if len(self.payload['pull_request']['body']) > self.chatwork_message_max_len:
-            dots = '\n...'
-
         return '[info][title]PR Opened ' + self.payload['pull_request']['html_url'] + '[/title]' + \
             str(self.payload['pull_request']['title']) + '\n\n' + \
-            str(self.payload['pull_request']['body'][:self.chatwork_message_max_len]) + dots + '[/info]'
+            self._filterInnerContent(self.payload['pull_request']['body']) + '[/info]'
 
     def _buildPRClosedMessage(self):
         """
         Build message content, corresponding to github "PR closed" event.
         To: pull request author.
         """
-        dots = ''
-        if len(self.payload['pull_request']['body']) > self.chatwork_message_max_len:
-            dots = '\n...'
+        to_list = [self.payload['pull_request']['user']['login']]
 
-        return self._buildAddresseeString([self.payload['pull_request']['user']['login']]) + \
+        return self._buildAddresseeString(guthub_addressee_list=to_list) + \
             '[info][title]PR Closed ' + self.payload['pull_request']['html_url'] + '[/title]' + \
             str(self.payload['pull_request']['title']) + '\n\n' + \
-            str(self.payload['pull_request']['body'][:self.chatwork_message_max_len]) + dots + '[/info]'
+            self._filterInnerContent(self.payload['pull_request']['body']) + '[/info]'
 
     def _buildPRCommentedMessage(self):
         """
         Build message content, corresponding to github "PR commented" event.
         To: pull request author and @username.
         """
-        dots = ''
-        if len(self.payload['comment']['body']) > self.chatwork_message_max_len:
-            dots = '\n...'
+        to_list = [self.payload['pull_request']['user']['login']]
 
-        return self._buildAddresseeString([self.payload['pull_request']['user']['login']], self.payload['comment']['body']) + \
+        return self._buildAddresseeString(to_list, self.payload['comment']['body']) + \
             '[info][title]PR Commented ' + self.payload['comment']['html_url'] + '[/title]' + \
-            str(self.payload['comment']['body'][:self.chatwork_message_max_len] + dots + '[/info]')
+            self._filterInnerContent(self.payload['comment']['body']) + '[/info]'
 
     def _buildCommitCommentedMessage(self):
         """
         Build message content, corresponding to github "Commit commented" event.
         To: All and @username (API does not return commit author, maybe need additional request).
         """
-        dots = ''
-        if len(self.payload['comment']['body']) > self.chatwork_message_max_len:
-            dots = '\n...'
-
-        return self._buildAddresseeString(self.payload['comment']['body']) + \
+        return self._buildAddresseeString(guthub_addressee_list=[], text=self.payload['comment']['body']) + \
             '[info][title]Commit Commented ' + self.payload['comment']['html_url'] + '[/title]' + \
-            str(self.payload['comment']['body'][:self.chatwork_message_max_len]) + dots + '[/info]'
+            self._filterInnerContent(self.payload['comment']['body']) + '[/info]'
 
     def _buildPRAssignedMessage(self):
         """
         Build message content, corresponding to github "Issue assigned" event.
         To: issue assignee.
         """
-        dots = ''
-        if len(self.payload['pull_request']['body']) > self.chatwork_message_max_len:
-            dots = '\n...'
+        to_list = [self.payload['assignee']['login']]
 
-        return self._buildAddresseeString([self.payload['assignee']['login']]) + \
+        return self._buildAddresseeString(guthub_addressee_list=to_list) + \
             '[info][title]PR Assigned to ' + self.payload['assignee']['login'] + ' ' + \
             self.payload['pull_request']['html_url'] + '[/title]' + \
             str(self.payload['pull_request']['title']) + '\n\n' + \
-            str(self.payload['pull_request']['body'][:self.chatwork_message_max_len]) + dots + '[/info]'
+            self._filterInnerContent(self.payload['pull_request']['body']) + '[/info]'
 
     def _send(self, body):
         """
         Sending POST request to Chatwork with Curl
         :param body: String - Content of message, that will be sent to Chatwork
         """
-        room_id = self.repository_room_map[self.payload['repository']['name']]
-        c = pycurl.Curl()
-        c.setopt(pycurl.URL, 'https://api.chatwork.com/v1/rooms/' + str(room_id) + '/messages')
-        c.setopt(pycurl.HTTPHEADER, ['X-ChatWorkToken: ' + self.chatwork_token])
-        c.setopt(pycurl.POST, 1)
-        c.setopt(pycurl.POSTFIELDS, urllib.parse.urlencode({'body': body}))
-        c.perform()
+        room_ids = self.repository_room_map[self.payload['repository']['name']]
+        for room_id in room_ids:
+            c = pycurl.Curl()
+            c.setopt(pycurl.URL, 'https://api.chatwork.com/v1/rooms/' + str(room_id) + '/messages')
+            c.setopt(pycurl.HTTPHEADER, ['X-ChatWorkToken: ' + self.chatwork_token])
+            c.setopt(pycurl.POST, 1)
+            c.setopt(pycurl.POSTFIELDS, urllib.parse.urlencode({'body': body}))
+            c.perform()
 
     def execute(self):
         """
@@ -297,8 +271,29 @@ class GithubChatworkBot:
         else:
             self._log('Execution failed: event handler is not set.', 'CRITICAL')
 
-        # body = body.replace('```', )
         self._send(body)
+
+    def _filterInnerContent(self, text):
+        """
+        Filtering inner content of the message. Cutting and replacing.
+        :param text: String - Inner content of the message (after [title] tag inside [info] tag)
+        :return: text: String - Filtered inner content of the message
+        """
+        text = str(text)
+
+        # adding dots at the end of contents if contents length too large
+        dots = ''
+        if len(text) > self.chatwork_message_max_len:
+            dots = '\n...'
+
+        # cutting to chatwork_message_max_len
+        text = text[:self.chatwork_message_max_len]
+
+        # Replace ``` with [code] tag
+        p = re.compile('```(.*?)(```|$)', re.DOTALL)
+        text = p.sub('[code]\g<1>[/code]', text)
+
+        return text + dots
 
     def _log(self, text, level):
         """

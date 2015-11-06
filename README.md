@@ -25,11 +25,11 @@ botInstance = GithubChatworkBot()
 </pre>
 
 Setting chatwork room id, where messages goes, and corresponding repository names.
-Example below means, that events from repository somerepo goes to chatwork room 36410221
-and events from moreonerepo goes to room 34543645
+Example below means, that events from repository somerepo goes to chatwork room 36410221 and 34543645,
+also events from moreonerepo goes to room 34543645.
 Do not forget to add bot to all rooms and configure webhooks on all repositories!!
 <pre>
-botInstance.repository_room_map = {"somerepo": "36410221", "moreonerepo": "34543645"}
+botInstance.repository_room_map = {"somerepo": ["36410221", "34543645"], "moreonerepo": ["34543645"]}
 </pre>
 
 Setting chatwork API token
