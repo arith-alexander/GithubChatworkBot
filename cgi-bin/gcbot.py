@@ -137,20 +137,21 @@ class GithubChatworkBot:
     def _buildIssueOpenedMessage(self):
         """
         Build message content, corresponding to github "Issue opened" event
-        To all.
+        To all and @username.
         """
-        return '[info][title]Issue Opened ' + self.payload['issue']['html_url'] + '[/title]' + \
+        return self._buildAddresseeString(guthub_addressee_list=[], text=self.payload['issue']['body']) + \
+            '[info][title]Issue Opened ' + self.payload['issue']['html_url'] + '[/title]' + \
             str(self.payload['issue']['title']) + '\n\n' + \
             self._filterInnerContent(self.payload['issue']['body']) + '[/info]'
 
     def _buildIssueAssignedMessage(self):
         """
         Build message content, corresponding to github "Issue assigned" event.
-        To: issue assignee.
+        To: issue assignee and @username in body.
         """
         to_list = [self.payload['assignee']['login']]
 
-        return self._buildAddresseeString(guthub_addressee_list=to_list) + \
+        return self._buildAddresseeString(guthub_addressee_list=to_list, text=self.payload['issue']['body']) + \
             '[info][title]Issue Assigned to ' + self.payload['assignee']['login'] + ' ' + \
             self.payload['issue']['html_url'] + '[/title]' + \
             str(self.payload['issue']['title']) + '\n\n' + \
@@ -159,14 +160,14 @@ class GithubChatworkBot:
     def _buildIssueClosedMessage(self):
         """
         Build message content, corresponding to github "Issue closed" event.
-        To: issue assignee and issue author.
+        To: issue assignee and issue author and @username in body.
         """
         to_list = [self.payload['issue']['user']['login']]
         if self.payload['issue']['assignee']:
             if self.payload['issue']['assignee']['login'] != self.payload['issue']['user']['login']:
                 to_list.append(self.payload['issue']['assignee']['login'])
 
-        return self._buildAddresseeString(guthub_addressee_list=to_list) + \
+        return self._buildAddresseeString(guthub_addressee_list=to_list, text=self.payload['issue']['body']) + \
             '[info][title]Issue Closed ' + self.payload['issue']['html_url'] + '[/title]' + \
             str(self.payload['issue']['title']) + '\n\n' + \
             self._filterInnerContent(self.payload['issue']['body']) + '[/info]'
