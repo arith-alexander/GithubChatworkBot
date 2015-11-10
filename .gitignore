@@ -1,5 +1,6 @@
 .DS_Store
 cgi-bin/config.py
 logs/*.txt
+logs/errors/*.txt
 .idea/
 cgi-bin/__pycache__/
