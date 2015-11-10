@@ -3,7 +3,7 @@
 
 # Python server.　Starting on system boot with cron.sh by cron.
 
-PORT = 8000
+PORT = 80
 import http.server
 httpd = http.server.HTTPServer(("", PORT), http.server.CGIHTTPRequestHandler)
 try:

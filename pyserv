@@ -1,0 +1,25 @@
+# chkconfig: 345 99 01
+# description: Lunch python in-built server. Copy this to /etc/init.d and launch "chkconfig --add pyserv". 
+
+PATH=~/.pyenv/shims:/usr/local/bin:/usr/bin:/bin:/sbin:/bin:/usr/bin:/usr/sbin
+start(){
+	cd /usr/scripts/GithubChatworkBot/; python -m http.server --cgi 80 > /dev/null 2>&1 
+	return 0
+}
+
+stop(){
+	return 0
+}
+
+case "$1" in
+    start)
+	start
+	;;
+    stop)
+	stop
+	;;
+    *)
+      	echo $"Usage: $0 {start|stop}"
+esac
+
+exit 0
