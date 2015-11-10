@@ -1,5 +1,5 @@
 # chkconfig: 345 99 01
-# description: Lunch python in-built server. Copy this to /etc/init.d and launch "chkconfig --add pyserv". 
+# description: Launch python in-built server. Copy this to /etc/init.d and launch "chkconfig --add pyserv".
 
 PATH=~/.pyenv/shims:/usr/local/bin:/usr/bin:/bin:/sbin:/bin:/usr/bin:/usr/sbin
 start(){

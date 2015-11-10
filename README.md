@@ -11,6 +11,10 @@ To start cgi http server execute this in server home folder (i.e. folder, that c
 <pre>
 python3 -m http.server --cgi
 </pre>
+To start server on reboot copy pyserv to /etc/init.d, change path to scripts inside it and launch
+<pre>
+chkconfig --add pyserv
+</pre>
 For testing environment you can use ngrok to make server available from internet:
 <pre>
 ./ngrok http 8000

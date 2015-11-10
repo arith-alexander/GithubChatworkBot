@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # coding: utf-8
 
-# Python server.　Starting on system boot with cron.sh by cron.
+# Python server. Same as "python -m http.server --cgi 80", currently not used, replaced by pyserv service.
 
 PORT = 80
 import http.server
