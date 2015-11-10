@@ -157,8 +157,7 @@ class GithubChatworkBot:
             '[info][title]Issue Assigned to ' + self.payload['assignee']['login'] + \
             ' by ' + self.payload['sender']['login'] + '\n ' + \
             self.payload['issue']['html_url'] + '[/title]' + \
-            str(self.payload['issue']['title']) + '\n\n' + \
-            self._filterInnerContent(self.payload['issue']['body']) + '[/info]'
+            str(self.payload['issue']['title']) + '[/info]'
 
     def _buildIssueClosedMessage(self):
         """
@@ -232,8 +231,7 @@ class GithubChatworkBot:
             '[info][title]PR Assigned to ' + self.payload['assignee']['login'] + \
             ' by ' + self.payload['sender']['login'] + '\n ' + \
             self.payload['pull_request']['html_url'] + '[/title]' + \
-            str(self.payload['pull_request']['title']) + '\n\n' + \
-            self._filterInnerContent(self.payload['pull_request']['body']) + '[/info]'
+            str(self.payload['pull_request']['title']) + '[/info]'
 
     def _send(self, body):
         """
