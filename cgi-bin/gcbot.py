@@ -131,7 +131,8 @@ class GithubChatworkBot:
                 to_list.append(self.payload['issue']['assignee']['login'])
 
         return self._buildAddresseeString(to_list, self.payload['comment']['body']) + \
-            '[info][title]Issue Commented ' + self.payload['comment']['html_url'] + '[/title]' + \
+            '[info][title]Issue Commented by ' + self.payload['sender']['login'] + '\n ' + \
+            self.payload['comment']['html_url'] + '[/title]' + \
             self._filterInnerContent(self.payload['comment']['body']) + '[/info]'
 
     def _buildIssueOpenedMessage(self):
@@ -140,7 +141,8 @@ class GithubChatworkBot:
         To all and @username.
         """
         return self._buildAddresseeString(guthub_addressee_list=[], text=self.payload['issue']['body']) + \
-            '[info][title]Issue Opened ' + self.payload['issue']['html_url'] + '[/title]' + \
+            '[info][title]Issue Opened by ' + self.payload['sender']['login'] + '\n ' + \
+            self.payload['issue']['html_url'] + '[/title]' + \
             str(self.payload['issue']['title']) + '\n\n' + \
             self._filterInnerContent(self.payload['issue']['body']) + '[/info]'
 
@@ -152,7 +154,8 @@ class GithubChatworkBot:
         to_list = [self.payload['assignee']['login']]
 
         return self._buildAddresseeString(guthub_addressee_list=to_list, text=self.payload['issue']['body']) + \
-            '[info][title]Issue Assigned to ' + self.payload['assignee']['login'] + ' ' + \
+            '[info][title]Issue Assigned to ' + self.payload['assignee']['login'] + \
+            ' by ' + self.payload['sender']['login'] + '\n ' + \
             self.payload['issue']['html_url'] + '[/title]' + \
             str(self.payload['issue']['title']) + '\n\n' + \
             self._filterInnerContent(self.payload['issue']['body']) + '[/info]'
@@ -168,7 +171,8 @@ class GithubChatworkBot:
                 to_list.append(self.payload['issue']['assignee']['login'])
 
         return self._buildAddresseeString(guthub_addressee_list=to_list, text=self.payload['issue']['body']) + \
-            '[info][title]Issue Closed ' + self.payload['issue']['html_url'] + '[/title]' + \
+            '[info][title]Issue Closed by ' + self.payload['sender']['login'] + '\n ' + \
+            self.payload['issue']['html_url'] + '[/title]' + \
             str(self.payload['issue']['title']) + '\n\n' + \
             self._filterInnerContent(self.payload['issue']['body']) + '[/info]'
 
@@ -177,7 +181,8 @@ class GithubChatworkBot:
         Build message content, corresponding to github "PR opened" event.
         To all.
         """
-        return '[info][title]PR Opened ' + self.payload['pull_request']['html_url'] + '[/title]' + \
+        return '[info][title]PR Opened by ' + self.payload['sender']['login'] + '\n ' + \
+            self.payload['pull_request']['html_url'] + '[/title]' + \
             str(self.payload['pull_request']['title']) + '\n\n' + \
             self._filterInnerContent(self.payload['pull_request']['body']) + '[/info]'
 
@@ -189,7 +194,8 @@ class GithubChatworkBot:
         to_list = [self.payload['pull_request']['user']['login']]
 
         return self._buildAddresseeString(guthub_addressee_list=to_list) + \
-            '[info][title]PR Closed ' + self.payload['pull_request']['html_url'] + '[/title]' + \
+            '[info][title]PR Closed by ' + self.payload['sender']['login'] + '\n ' + \
+            self.payload['pull_request']['html_url'] + '[/title]' + \
             str(self.payload['pull_request']['title']) + '\n\n' + \
             self._filterInnerContent(self.payload['pull_request']['body']) + '[/info]'
 
@@ -201,7 +207,8 @@ class GithubChatworkBot:
         to_list = [self.payload['pull_request']['user']['login']]
 
         return self._buildAddresseeString(to_list, self.payload['comment']['body']) + \
-            '[info][title]PR Commented ' + self.payload['comment']['html_url'] + '[/title]' + \
+            '[info][title]PR Commented by ' + self.payload['sender']['login'] + '\n ' + \
+            self.payload['comment']['html_url'] + '[/title]' + \
             self._filterInnerContent(self.payload['comment']['body']) + '[/info]'
 
     def _buildCommitCommentedMessage(self):
@@ -210,7 +217,8 @@ class GithubChatworkBot:
         To: All and @username (API does not return commit author, maybe need additional request).
         """
         return self._buildAddresseeString(guthub_addressee_list=[], text=self.payload['comment']['body']) + \
-            '[info][title]Commit Commented ' + self.payload['comment']['html_url'] + '[/title]' + \
+            '[info][title]Commit Commented by ' + self.payload['sender']['login'] + '\n ' + \
+            self.payload['comment']['html_url'] + '[/title]' + \
             self._filterInnerContent(self.payload['comment']['body']) + '[/info]'
 
     def _buildPRAssignedMessage(self):
@@ -221,7 +229,8 @@ class GithubChatworkBot:
         to_list = [self.payload['assignee']['login']]
 
         return self._buildAddresseeString(guthub_addressee_list=to_list) + \
-            '[info][title]PR Assigned to ' + self.payload['assignee']['login'] + ' ' + \
+            '[info][title]PR Assigned to ' + self.payload['assignee']['login'] + \
+            ' by ' + self.payload['sender']['login'] + '\n ' + \
             self.payload['pull_request']['html_url'] + '[/title]' + \
             str(self.payload['pull_request']['title']) + '\n\n' + \
             self._filterInnerContent(self.payload['pull_request']['body']) + '[/info]'
