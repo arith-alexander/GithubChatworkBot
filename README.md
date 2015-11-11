@@ -118,7 +118,7 @@ repository_room_map = {
 ssh ec2-user@52.32.113.36 -i krpgms.pem
 ```
 `krpgms.pem`はキーへのパスです。キーは川井さんから貰えます。
-本番サーバーでのプロジェクトホームディレクトリーは　`/usr/scripts/GithubChatworkBot`です。
+本番サーバーでのプロジェクトホームディレクトリーは `/usr/scripts/GithubChatworkBot` です。
 ```
 ＄ cd　/usr/scripts/GithubChatworkBot
 ＄ git pull
