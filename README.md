@@ -110,6 +110,14 @@ repository_room_map = {
 $ chmod 0777 logs/errors
 $ chmod 0777 logs/log.txt
 ```
+おそらく最初はライブラリーが見つからない等エラーが出ますので必要なライブラリーをインストールします。pycurlをpipでインストールできない場合は以下のコマンドを実行してください。
+```
+pip uninstall pycurl
+yum install libcurl-devel
+export PYCURL_SSL_LIBRARY=nss
+easy_install pycurl
+pip install pycurl
+```
 
 ##　開発の流れ
 - まずはarismileの開発マニュアルを読んでください　https://github.com/ArithmeticCoLtd/arismile-documents
