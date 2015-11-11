@@ -1,6 +1,6 @@
 # GithubChatworkBot
 Send github event messages to specified Chatwork room with corresponding "To:" field. See code commentaries for more details.
-## General information:
+## General information
 Before using class you must get Chatwork API Key, add bot account to all designated Chatwork rooms and configure Github webhooks.
 Webhook config (go to Github repository configuration page and open "Webhooks & Services" tab):
 - Payload url - set to url, where GithubChatworkBot.execute() method is called;
@@ -22,7 +22,7 @@ For testing environment you can use ngrok to make server available from internet
 
 Rename cgi-bin/config.py.sample to cgi-bin/config.py and set required configuration. Rename logs/log.txt.sample to logs/log.txt and add write rights.
 
-## Class usage:
+## Class usage
 Creating instance:
 <pre>
 botInstance = GithubChatworkBot()
@@ -62,7 +62,7 @@ Execute POST to Chatwork:
 botInstance.execute()
 </pre>
 
-## 個人開発環境構築:
+## 個人開発環境構築
 - IDEはpyCharm SEがお勧め。公式サイトからダウンロードしてインストール。
 - pyenvをインストール https://github.com/yyuu/pyenv
 - リポジトリをクローンします（例えばユザーホームディレクトリーで）
