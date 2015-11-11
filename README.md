@@ -127,3 +127,4 @@ ssh ec2-user@52.32.113.36 -i krpgms.pem
 ＄ cd　/usr/scripts/GithubChatworkBot
 ＄ git pull
 ```
+- 動作確認をします。
