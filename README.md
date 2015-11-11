@@ -105,7 +105,11 @@ repository_room_map = {
 }
 ```
 - テストChatwork APIキーが発行されたChatworkアカウント（botのアカウント）をテスト部屋に招待します。サーシャさんからChatwork APIを貰った場合は、botのアカウントの名前はArithmetic Github Botです。
-- 以上です。動作確認のためgithubでテストリポジトリを開いてIssueを立てます。Chatworkテスト部屋に通知が来るはずです。
+- 以上です。動作確認のためgithubでテストリポジトリを開いてIssueを立てます。Chatworkテスト部屋に通知が来るはずです。エラーメッセージは `logs/errors` に保存されます。logは `logs/log.txt` です。正常に動作しない時エラーがない場合は権限を与えてください。
+```
+$ chmod 0777 logs/errors
+$ chmod 0777 logs/log.txt
+```
 
 ##　開発の流れ
 - まずはarismileの開発マニュアルを読んでください　https://github.com/ArithmeticCoLtd/arismile-documents
