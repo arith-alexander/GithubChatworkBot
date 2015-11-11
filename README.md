@@ -72,7 +72,7 @@ git clone https://github.com/arith-alexander/GithubChatworkBot
 ```
 - ngrokをインストールして起動します　https://ngrok.com/
 ```
-./ngrok http 8000
+./ngrok http 80
 ```
 - ngrokを起動してこのような割り当てられたurlをコピーします。
 ```
