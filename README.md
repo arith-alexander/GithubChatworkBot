@@ -64,7 +64,7 @@ botInstance.execute()
 
 ## 個人開発環境構築
 - IDEはpyCharm SEがお勧め。公式サイトからダウンロードしてインストール。
-- pyenvをインストール https://github.com/yyuu/pyenv
+- pyenvをインストール https://github.com/yyuu/pyenv 。Pythonのバージョンは3.5.0です。
 - リポジトリをクローンします（例えばユザーホームディレクトリーで）
 ```
 cd ~
