@@ -110,7 +110,11 @@ repository_room_map = {
 $ chmod 0777 logs/errors
 $ chmod 0777 logs/log.txt
 ```
-おそらく最初はライブラリーが見つからない等エラーが出ますので必要なライブラリーをインストールします。pycurlをpipでインストールできない場合は以下のコマンドを実行してください。
+おそらく最初はライブラリーが見つからない等エラーが出ますので必要なライブラリーをインストールします。
+```
+pip install <libname>
+```
+pycurlをpipでインストールできない場合は以下のコマンドを実行してください。
 ```
 pip uninstall pycurl
 yum install libcurl-devel
