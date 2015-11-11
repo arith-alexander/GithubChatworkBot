@@ -83,7 +83,7 @@ http://cf98d1e8.ngrok.io
 cd ~
 python3 -m http.server --cgi 80
 ```
-- 自分用テストのためリポジトリを作ります。このテストリポジトリ　https://github.com/arith-alexander/cwprcbot　を使ってもおkですが、使う場合は権限をサーシャさんから貰ってください。
+- 自分用テストのためリポジトリを作ります。このテストリポジトリ https://github.com/arith-alexander/cwprcbot を使ってもおkですが、使う場合は権限をサーシャさんから貰ってください。
 - githubでテストリポジトリの設定をします。
 Go to Github repository configuration page and open "Webhooks & Services" tab.
 Webhook config:
