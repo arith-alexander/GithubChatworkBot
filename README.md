@@ -80,7 +80,7 @@ http://cf98d1e8.ngrok.io
 ```
 - リポジトリをクローンしたディレクトリー下でHTTPサーバーを起動します。
 ```
-cd ~
+cd ~/GithubChatworkBot
 python3 -m http.server --cgi 80
 ```
 - 自分用テストのためリポジトリを作ります。このテストリポジトリ https://github.com/arith-alexander/cwprcbot を使ってもおkですが、使う場合は権限をサーシャさんから貰ってください。
