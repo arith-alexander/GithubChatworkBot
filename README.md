@@ -69,6 +69,11 @@ botInstance.execute()
 
 ## 個人開発環境構築
 - IDEはpyCharm SEがお勧め。公式サイトからダウンロードしてインストール。
+- gem updateとbrew installを実行します。
+```
+sudo gem update
+brew install (or brew update)
+```
 - pyenvをインストール https://github.com/yyuu/pyenv 。Pythonのバージョンは3.5.0です。
 - リポジトリをクローンします（例えばユザーホームディレクトリーで）
 ```
