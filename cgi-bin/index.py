@@ -26,17 +26,18 @@ logging.basicConfig(format="%(asctime)s %(levelname)s %(message)s", filename="lo
 # If "config" key exists in POST data, then this is request from browser to change config.
 # Write incoming POST data to cgi-bin/config.py
 # @todo Dramatically lowering security! Temporary solution, i hope.
-github_post_data = cgi.FieldStorage()
-if "config" in github_post_data:
+post_data = cgi.FieldStorage()
+if "config" in post_data:
     # Exec to prevent saving invalid code. If code is invalid, exec throws error.
-    exec(github_post_data["config"].value)
+    exec(post_data["config"].value)
     f = open('cgi-bin/config.py', 'w')
-    f.write(github_post_data["config"].value)
+    f.write(post_data["config"].value)
     f.close()
     print('<center>Config saved!</center>')
 # If "payload" key exists in POST data, then this is request from Github.
-elif "payload" in github_post_data:
+elif "payload" in post_data:
     botInstance = gcbot.GithubChatworkBot()
+    botInstance.setPayload(post_data)
     botInstance.chatwork_token = config.chatwork_token
     botInstance.logging = config.logging
     botInstance.chatwork_github_account_map = config.chatwork_github_account_map
@@ -47,6 +48,3 @@ elif "payload" in github_post_data:
 f = open('cgi-bin/config.py', 'r')
 print('<center><h2> Chatwork Bot config editor</h2><form method="post"><div>Please be careful while editing <input style="width:100px;" type="submit" /><div><textarea style="width:500px; height:450px;" name="config">' + f.read() + '</textarea></center></form>')
 f.close()
-
-
-

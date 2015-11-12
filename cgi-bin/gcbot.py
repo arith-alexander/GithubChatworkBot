@@ -28,6 +28,9 @@ class GithubChatworkBot:
     # Creating instance:
     botInstance = GithubChatworkBot()
 
+    # Setting payload:
+    botInstance.setPayload(cgi.FieldStorage())
+
     # Setting chatwork room id, where messages goes, and corresponding repository names.
     # Example below means, that events from repository somerepo goes to chatwork room 36410221 and 34543645,
     # also events from moreonerepo goes to room 34543645.
@@ -65,17 +68,11 @@ class GithubChatworkBot:
     # Payload, that comes from Github. For internal usage.
     _payload = {}
 
-    def __init__(self):
-        """
-        Initialize instance
-        """
-        self._setPayload()
-
-    def _setPayload(self):
+    def setPayload(self, github_post_data):
         """
         Set payload property according to payload POST fields, incoming from Github
+        :param github_post_data: Dictionary - POST fields, incoming from Github
         """
-        github_post_data = cgi.FieldStorage()
         try:
             github_post_data['payload']
         except TypeError:
@@ -84,7 +81,7 @@ class GithubChatworkBot:
             self._log('Payload format is wrong.', 'CRITICAL')
 
         self._log(github_post_data['payload'].value, 'INFO')
-        self.payload = json.loads(github_post_data['payload'].value)
+        self._payload = json.loads(github_post_data['payload'].value)
 
     def _getChatworkUsericonByGithubName(self, github_account):
         """
@@ -120,7 +117,7 @@ class GithubChatworkBot:
 
         # Remove event sender account from list. He already knows about event.
         for chatwork_acount, github_account in self.chatwork_github_account_map.items():
-            if github_account == self.payload['sender']['login']:
+            if github_account == self._payload['sender']['login']:
                 if chatwork_acount in chatwork_addressee_list:
                     chatwork_addressee_list.remove(chatwork_acount)
 
@@ -134,121 +131,121 @@ class GithubChatworkBot:
         Build message content, corresponding to github "Issue commented" event.
         To: issue assignee, issue author and @username.
         """
-        to_list = [self.payload['issue']['user']['login']]
+        to_list = [self._payload['issue']['user']['login']]
 
-        if self.payload['issue']['assignee']:
-            if self.payload['issue']['assignee']['login'] != self.payload['issue']['user']['login']:
-                to_list.append(self.payload['issue']['assignee']['login'])
+        if self._payload['issue']['assignee']:
+            if self._payload['issue']['assignee']['login'] != self._payload['issue']['user']['login']:
+                to_list.append(self._payload['issue']['assignee']['login'])
 
-        return self._buildAddresseeString(to_list, self.payload['comment']['body']) + \
-            '[info][title]Issue Commented by ' + self._getChatworkUsericonByGithubName(self.payload['sender']['login']) + '\n' + \
-            self.payload['comment']['html_url'] + '[/title]' + \
-            self._filterInnerContent(self.payload['comment']['body']) + '[/info]'
+        return self._buildAddresseeString(to_list, self._payload['comment']['body']) + \
+            '[info][title]Issue Commented by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
+            self._payload['comment']['html_url'] + '[/title]' + \
+            self._filterInnerContent(self._payload['comment']['body']) + '[/info]'
 
     def _buildIssueOpenedMessage(self):
         """
         Build message content, corresponding to github "Issue opened" event
         To all and @username.
         """
-        return self._buildAddresseeString(guthub_addressee_list=[], text=self.payload['issue']['body']) + \
-            '[info][title]Issue Opened by ' + self._getChatworkUsericonByGithubName(self.payload['sender']['login']) + '\n' + \
-            self.payload['issue']['html_url'] + '[/title]' + \
-            str(self.payload['issue']['title']) + '\n\n' + \
-            self._filterInnerContent(self.payload['issue']['body']) + '[/info]'
+        return self._buildAddresseeString(guthub_addressee_list=[], text=self._payload['issue']['body']) + \
+            '[info][title]Issue Opened by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
+            self._payload['issue']['html_url'] + '[/title]' + \
+            str(self._payload['issue']['title']) + '\n\n' + \
+            self._filterInnerContent(self._payload['issue']['body']) + '[/info]'
 
     def _buildIssueAssignedMessage(self):
         """
         Build message content, corresponding to github "Issue assigned" event.
         To: issue assignee and @username in body.
         """
-        to_list = [self.payload['assignee']['login']]
+        to_list = [self._payload['assignee']['login']]
 
-        return self._buildAddresseeString(guthub_addressee_list=to_list, text=self.payload['issue']['body']) + \
-            '[info][title]Issue Assigned to ' + self._getChatworkUsericonByGithubName(self.payload['assignee']['login']) + \
-            ' by ' + self._getChatworkUsericonByGithubName(self.payload['sender']['login']) + '\n' + \
-            self.payload['issue']['html_url'] + '[/title]' + \
-            str(self.payload['issue']['title']) + '[/info]'
+        return self._buildAddresseeString(guthub_addressee_list=to_list, text=self._payload['issue']['body']) + \
+            '[info][title]Issue Assigned to ' + self._payload['assignee']['login'] + \
+            ' by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
+            self._payload['issue']['html_url'] + '[/title]' + \
+            str(self._payload['issue']['title']) + '[/info]'
 
     def _buildIssueClosedMessage(self):
         """
         Build message content, corresponding to github "Issue closed" event.
         To: issue assignee and issue author and @username in body.
         """
-        to_list = [self.payload['issue']['user']['login']]
-        if self.payload['issue']['assignee']:
-            if self.payload['issue']['assignee']['login'] != self.payload['issue']['user']['login']:
-                to_list.append(self.payload['issue']['assignee']['login'])
+        to_list = [self._payload['issue']['user']['login']]
+        if self._payload['issue']['assignee']:
+            if self._payload['issue']['assignee']['login'] != self._payload['issue']['user']['login']:
+                to_list.append(self._payload['issue']['assignee']['login'])
 
-        return self._buildAddresseeString(guthub_addressee_list=to_list, text=self.payload['issue']['body']) + \
-            '[info][title]Issue Closed by ' + self._getChatworkUsericonByGithubName(self.payload['sender']['login']) + '\n' + \
-            self.payload['issue']['html_url'] + '[/title]' + \
-            str(self.payload['issue']['title']) + '\n\n' + \
-            self._filterInnerContent(self.payload['issue']['body']) + '[/info]'
+        return self._buildAddresseeString(guthub_addressee_list=to_list, text=self._payload['issue']['body']) + \
+            '[info][title]Issue Closed by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
+            self._payload['issue']['html_url'] + '[/title]' + \
+            str(self._payload['issue']['title']) + '\n\n' + \
+            self._filterInnerContent(self._payload['issue']['body']) + '[/info]'
 
     def _buildPROpenedMessage(self):
         """
         Build message content, corresponding to github "PR opened" event.
         To all.
         """
-        return '[info][title]PR Opened by ' + self._getChatworkUsericonByGithubName(self.payload['sender']['login']) + '\n' + \
-            self.payload['pull_request']['html_url'] + '[/title]' + \
-            str(self.payload['pull_request']['title']) + '\n\n' + \
-            self._filterInnerContent(self.payload['pull_request']['body']) + '[/info]'
+        return '[info][title]PR Opened by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
+            self._payload['pull_request']['html_url'] + '[/title]' + \
+            str(self._payload['pull_request']['title']) + '\n\n' + \
+            self._filterInnerContent(self._payload['pull_request']['body']) + '[/info]'
 
     def _buildPRClosedMessage(self):
         """
         Build message content, corresponding to github "PR closed" event.
         To: pull request author.
         """
-        to_list = [self.payload['pull_request']['user']['login']]
+        to_list = [self._payload['pull_request']['user']['login']]
 
         return self._buildAddresseeString(guthub_addressee_list=to_list) + \
-            '[info][title]PR Closed by ' + self._getChatworkUsericonByGithubName(self.payload['sender']['login']) + '\n' + \
-            self.payload['pull_request']['html_url'] + '[/title]' + \
-            str(self.payload['pull_request']['title']) + '\n\n' + \
-            self._filterInnerContent(self.payload['pull_request']['body']) + '[/info]'
+            '[info][title]PR Closed by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
+            self._payload['pull_request']['html_url'] + '[/title]' + \
+            str(self._payload['pull_request']['title']) + '\n\n' + \
+            self._filterInnerContent(self._payload['pull_request']['body']) + '[/info]'
 
     def _buildPRCommentedMessage(self):
         """
         Build message content, corresponding to github "PR commented" event.
         To: pull request author and @username.
         """
-        to_list = [self.payload['pull_request']['user']['login']]
+        to_list = [self._payload['pull_request']['user']['login']]
 
-        return self._buildAddresseeString(to_list, self.payload['comment']['body']) + \
-            '[info][title]PR Commented by ' + self._getChatworkUsericonByGithubName(self.payload['sender']['login']) + '\n' + \
-            self.payload['comment']['html_url'] + '[/title]' + \
-            self._filterInnerContent(self.payload['comment']['body']) + '[/info]'
+        return self._buildAddresseeString(to_list, self._payload['comment']['body']) + \
+            '[info][title]PR Commented by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
+            self._payload['comment']['html_url'] + '[/title]' + \
+            self._filterInnerContent(self._payload['comment']['body']) + '[/info]'
 
     def _buildCommitCommentedMessage(self):
         """
         Build message content, corresponding to github "Commit commented" event.
         To: All and @username (API does not return commit author, maybe need additional request).
         """
-        return self._buildAddresseeString(guthub_addressee_list=[], text=self.payload['comment']['body']) + \
-            '[info][title]Commit Commented by ' + self._getChatworkUsericonByGithubName(self.payload['sender']['login']) + '\n' + \
-            self.payload['comment']['html_url'] + '[/title]' + \
-            self._filterInnerContent(self.payload['comment']['body']) + '[/info]'
+        return self._buildAddresseeString(guthub_addressee_list=[], text=self._payload['comment']['body']) + \
+            '[info][title]Commit Commented by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
+            self._payload['comment']['html_url'] + '[/title]' + \
+            self._filterInnerContent(self._payload['comment']['body']) + '[/info]'
 
     def _buildPRAssignedMessage(self):
         """
         Build message content, corresponding to github "Issue assigned" event.
         To: issue assignee.
         """
-        to_list = [self.payload['assignee']['login']]
+        to_list = [self._payload['assignee']['login']]
 
         return self._buildAddresseeString(guthub_addressee_list=to_list) + \
-            '[info][title]PR Assigned to ' + self._getChatworkUsericonByGithubName(self.payload['assignee']['login']) + \
-            ' by ' + self._getChatworkUsericonByGithubName(self.payload['sender']['login']) + '\n' + \
-            self.payload['pull_request']['html_url'] + '[/title]' + \
-            str(self.payload['pull_request']['title']) + '[/info]'
+            '[info][title]PR Assigned to ' + self._payload['assignee']['login'] + \
+            ' by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
+            self._payload['pull_request']['html_url'] + '[/title]' + \
+            str(self._payload['pull_request']['title']) + '[/info]'
 
     def _send(self, body):
         """
         Sending POST request to Chatwork with Curl
         :param body: String - Content of message, that will be sent to Chatwork
         """
-        room_ids = self.repository_room_map[self.payload['repository']['name']]
+        room_ids = self.repository_room_map[self._payload['repository']['name']]
         for room_id in room_ids:
             c = pycurl.Curl()
             c.setopt(pycurl.URL, 'https://api.chatwork.com/v1/rooms/' + str(room_id) + '/messages')
@@ -261,7 +258,7 @@ class GithubChatworkBot:
         """
         Setting event handlers and executing POST process.
         """
-        if not self.payload:
+        if not self._payload:
             self._log('Execution failed: payload is empty.', 'CRITICAL')
         if not self.repository_room_map:
             self._log('Execution failed: repository-room map not set.', 'CRITICAL')
@@ -269,23 +266,23 @@ class GithubChatworkBot:
             self._log('Execution failed: chatwork token not set.', 'CRITICAL')
 
         body = ''
-        if self.payload['action'] == 'created' and 'issue' in self.payload.keys():
+        if self._payload['action'] == 'created' and 'issue' in self._payload.keys():
             body = self._buildIssueCommentedMessage()
-        elif self.payload['action'] == 'opened' and 'issue' in self.payload.keys():
+        elif self._payload['action'] == 'opened' and 'issue' in self._payload.keys():
             body = self._buildIssueOpenedMessage()
-        elif self.payload['action'] == 'assigned' and 'issue' in self.payload.keys():
+        elif self._payload['action'] == 'assigned' and 'issue' in self._payload.keys():
             body = self._buildIssueAssignedMessage()
-        elif self.payload['action'] == 'closed' and 'issue' in self.payload.keys():
+        elif self._payload['action'] == 'closed' and 'issue' in self._payload.keys():
             body = self._buildIssueClosedMessage()
-        elif self.payload['action'] == 'opened' and 'pull_request' in self.payload.keys():
+        elif self._payload['action'] == 'opened' and 'pull_request' in self._payload.keys():
             body = self._buildPROpenedMessage()
-        elif self.payload['action'] == 'closed' and 'pull_request' in self.payload.keys():
+        elif self._payload['action'] == 'closed' and 'pull_request' in self._payload.keys():
             body = self._buildPRClosedMessage()
-        elif self.payload['action'] == 'created' and 'pull_request' in self.payload.keys():
+        elif self._payload['action'] == 'created' and 'pull_request' in self._payload.keys():
             body = self._buildPRCommentedMessage()
-        elif self.payload['action'] == 'assigned' and 'pull_request' in self.payload.keys():
+        elif self._payload['action'] == 'assigned' and 'pull_request' in self._payload.keys():
             body = self._buildPRAssignedMessage()
-        elif self.payload['action'] == 'created' and 'comment' in self.payload.keys():
+        elif self._payload['action'] == 'created' and 'comment' in self._payload.keys():
             body = self._buildCommitCommentedMessage()
         else:
             self._log('Execution failed: event handler is not set.', 'CRITICAL')
