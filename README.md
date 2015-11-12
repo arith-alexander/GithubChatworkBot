@@ -28,6 +28,11 @@ Creating instance:
 botInstance = GithubChatworkBot()
 </pre>
 
+Setting payload:
+<pre>
+botInstance.setPayload(cgi.FieldStorage())
+</pre>
+
 Setting chatwork room id, where messages goes, and corresponding repository names.
 Example below means, that events from repository somerepo goes to chatwork room 36410221 and 34543645,
 also events from moreonerepo goes to room 34543645.
