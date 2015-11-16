@@ -1,6 +1,7 @@
 .DS_Store
-cgi-bin/config.py
+config.json
 logs/*.txt
 logs/errors/*.txt
 .idea/
-cgi-bin/__pycache__/
+backend/__pycache__/
+frontend/__pycache__/

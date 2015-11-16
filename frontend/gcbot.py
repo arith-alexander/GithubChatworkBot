@@ -92,6 +92,7 @@ class GithubChatworkBot:
         for map_chatwork_acount, map_github_account in self.chatwork_github_account_map.items():
             if github_account == map_github_account:
                 return '[piconname:' + map_chatwork_acount + ']'
+        return "unknown (" + github_account + ")"
 
     def _buildAddresseeString(self, guthub_addressee_list, text=""):
         """
@@ -245,7 +246,11 @@ class GithubChatworkBot:
         Sending POST request to Chatwork with Curl
         :param body: String - Content of message, that will be sent to Chatwork
         """
-        room_ids = self.repository_room_map[self._payload['repository']['name']]
+        room_ids = []
+        if self._payload['repository']['name'] not in self.repository_room_map.keys():
+            self._log('Execution failed: room not set for repository ' + self._payload['repository']['name'], 'CRITICAL')
+        else:
+            room_ids = self.repository_room_map[self._payload['repository']['name']]
         for room_id in room_ids:
             c = pycurl.Curl()
             c.setopt(pycurl.URL, 'https://api.chatwork.com/v1/rooms/' + str(room_id) + '/messages')
