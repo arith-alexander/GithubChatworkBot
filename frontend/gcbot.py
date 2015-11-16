@@ -314,7 +314,7 @@ class GithubChatworkBot:
         p = re.compile('```(.*?)(```|$)', re.DOTALL)
         text = p.sub('[code]\g<1>[/code]', text)
 
-        return text
+        return text + dots
 
     def _log(self, text, level):
         """
