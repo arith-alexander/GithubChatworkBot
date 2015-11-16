@@ -1,0 +1,10 @@
+{
+  "chatwork_token": '40339ab6...5e52412c7',
+  "logging": true,
+  "chatwork_github_account_map": {
+    "1471208": "accname"
+  },
+  "repository_room_map": {
+    "repname": ["36410221"]
+  }
+}
