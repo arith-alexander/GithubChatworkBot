@@ -28,6 +28,11 @@ Creating instance:
 botInstance = GithubChatworkBot()
 </pre>
 
+Setting payload:
+<pre>
+botInstance.setPayload(cgi.FieldStorage())
+</pre>
+
 Setting chatwork room id, where messages goes, and corresponding repository names.
 Example below means, that events from repository somerepo goes to chatwork room 36410221 and 34543645,
 also events from moreonerepo goes to room 34543645.
@@ -64,6 +69,11 @@ botInstance.execute()
 
 ## 個人開発環境構築
 - IDEはpyCharm SEがお勧め。公式サイトからダウンロードしてインストール。
+- gem updateとbrew installを実行します。
+```
+sudo gem update
+brew install (or brew update)
+```
 - pyenvをインストール https://github.com/yyuu/pyenv 。Pythonのバージョンは3.5.0です。
 - リポジトリをクローンします（例えばユザーホームディレクトリーで）
 ```
@@ -90,18 +100,20 @@ Webhook config:
   - Payload url - set to url, where GithubChatworkBot.execute() method is called (http://cf98d1e8.ngrok.io/cgi-bin/index.py)
   - Content type - application/x-www-form-urlencoded
   - Select individual events - Commit comment, Issues, Pull Request, Issue comment, Pull Request review comment
-- config.pyスクリプトを編集します。
+- config.jsonスクリプトを編集します。
 ChatworkのテストAPIトークンは新しく作ってもいいけど、1日かかりますのでサーシャさんから貰った方が早いです。
 chatwork_github_account_mapとrepository_room_mapは例えば以下の通りです。
 ```
 # "chatworkユザーid": "githubユザーの名前"
-chatwork_github_account_map = {
-    "1471208": "arith-alexander",
-}
+"chatwork_github_account_map": {
+  "1471208": "arith-alexander"
+},
 
 # "テストリポジトリ": "通知のためのChatworkテスト部屋のid"
-repository_room_map = {
-    "cwprcbot": ["36410221"],
+"repository_room_map": {
+  "cwprcbot": [
+    "36410221"
+  ]
 }
 ```
 - テストChatwork APIキーが発行されたChatworkアカウント（botのアカウント）をテスト部屋に招待します。サーシャさんからChatwork APIを貰った場合は、botのアカウントの名前はArithmetic Github Botです。
