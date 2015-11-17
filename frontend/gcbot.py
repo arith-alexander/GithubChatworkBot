@@ -162,7 +162,7 @@ class GithubChatworkBot:
         to_list = [self._payload['assignee']['login']]
 
         return self._buildAddresseeString(guthub_addressee_list=to_list, text=self._payload['issue']['body']) + \
-            '[info][title]Issue Assigned to ' + self._payload['assignee']['login'] + \
+            '[info][title]Issue Assigned to ' + self._getChatworkUsericonByGithubName(self._payload['assignee']['login']) + \
             ' by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
             self._payload['issue']['html_url'] + '[/title]' + \
             str(self._payload['issue']['title']) + '[/info]'
@@ -236,7 +236,7 @@ class GithubChatworkBot:
         to_list = [self._payload['assignee']['login']]
 
         return self._buildAddresseeString(guthub_addressee_list=to_list) + \
-            '[info][title]PR Assigned to ' + self._payload['assignee']['login'] + \
+            '[info][title]PR Assigned to ' + self._getChatworkUsericonByGithubName(self._payload['assignee']['login']) + \
             ' by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
             self._payload['pull_request']['html_url'] + '[/title]' + \
             str(self._payload['pull_request']['title']) + '[/info]'
