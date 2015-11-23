@@ -3,8 +3,9 @@
 
 # Dependencies of GithubChatworkBot class
 import sys
-import pycurl  # to send  POST to Chatwork
-import urllib  # to dictionary urlencode
+import urllib
+import urllib.request
+import socket
 import cgi  # to get POST fields from Github
 import json  # to convert payload from json to dictionary
 import logging  # log handling
@@ -252,12 +253,14 @@ class GithubChatworkBot:
         else:
             room_ids = self.repository_room_map[self._payload['repository']['name']]
         for room_id in room_ids:
-            c = pycurl.Curl()
-            c.setopt(pycurl.URL, 'https://api.chatwork.com/v1/rooms/' + str(room_id) + '/messages')
-            c.setopt(pycurl.HTTPHEADER, ['X-ChatWorkToken: ' + self.chatwork_token])
-            c.setopt(pycurl.POST, 1)
-            c.setopt(pycurl.POSTFIELDS, urllib.parse.urlencode({'body': body}))
-            c.perform()
+            socket.setdefaulttimeout(30)
+            url = 'https://api.chatwork.com/v1/rooms/' + str(room_id) + '/messages'
+            headers = {"X-ChatWorkToken": self.chatwork_token}
+            data = urllib.parse.urlencode({"body": body})
+            data = data.encode('utf-8') # data should be bytes
+            req = urllib.request.Request(url, data, headers)
+            with urllib.request.urlopen(req) as response:
+                response_data = response.read()
 
     def execute(self):
         """

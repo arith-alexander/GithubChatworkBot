@@ -1,0 +1,17 @@
+# chkconfig: 345 99 01
+# description: Launch chatwork bot pinger. Copy this to /etc/init.d and launch "chkconfig --add botpinger".
+
+start(){
+	sh /usr/scripts/GithubChatworkBot/pinger.sh >/usr/scripts/GithubChatworkBot/pingerlog.txt 2>&1 &
+        return 0
+}
+
+case "$1" in
+    start)
+	start
+	;;
+    *)
+      	echo $"Usage: $0 {start}"
+esac
+
+exit 0
