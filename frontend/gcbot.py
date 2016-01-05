@@ -181,8 +181,7 @@ class GithubChatworkBot:
         return self._buildAddresseeString(guthub_addressee_list=to_list, text=self._payload['issue']['body']) + \
             '[info][title]Issue Closed by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
             self._payload['issue']['html_url'] + '[/title]' + \
-            str(self._payload['issue']['title']) + '\n\n' + \
-            self._filterInnerContent(self._payload['issue']['body']) + '[/info]'
+            str(self._payload['issue']['title']) + '[/info]'
 
     def _buildPROpenedMessage(self):
         """
@@ -204,8 +203,7 @@ class GithubChatworkBot:
         return self._buildAddresseeString(guthub_addressee_list=to_list) + \
             '[info][title]PR Closed by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
             self._payload['pull_request']['html_url'] + '[/title]' + \
-            str(self._payload['pull_request']['title']) + '\n\n' + \
-            self._filterInnerContent(self._payload['pull_request']['body']) + '[/info]'
+            str(self._payload['pull_request']['title']) + '[/info]'
 
     def _buildPRCommentedMessage(self):
         """
