@@ -38,5 +38,5 @@ def main(env):
         botInstance.logging = config["logging"]
         botInstance.chatwork_github_account_map = config["chatwork_github_account_map"]
         botInstance.repository_room_map = config["repository_room_map"]
-        botInstance.execute()
-    return("ok")
+        botInstance.executeWebhookHandler()
+    return "ok"

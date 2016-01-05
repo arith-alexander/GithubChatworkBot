@@ -1,10 +1,29 @@
 {
   "chatwork_token": '40339ab6...5e52412c7',
+  "github_token": "7b95bb...48a4",
   "logging": true,
   "chatwork_github_account_map": {
-    "1471208": "accname"
+    "1471208": "accname",
+    "1471209": "accname2",
   },
   "repository_room_map": {
-    "repname": ["36410221"]
+    "repname": ["36410221"],
+    "repname2": ["36410229", "36410230"]
+  },
+  "cron": {
+    "ready_pr": {
+      "active": true,
+      "cron_user": "ec2-user",
+      "cron_definition": "*/30 10,11,12 * * 1,2,3,4,5",
+      "room_id": "123456",
+      "repositories": [
+        "repname",
+        "repname2"
+      ],
+      "exclude_days": [
+        "2016.01.11",
+        "2016.02.11"
+      ]
+    }
   }
 }
