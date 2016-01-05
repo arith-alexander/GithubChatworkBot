@@ -51,7 +51,7 @@ def main(env):
                 if cron_task["active"]:
                     job.enable()
                 else:
-                    job.disable()
+                    job.enable(False)
                 # Verify and save cron changes
                 if job.is_valid() and CronSlices.is_valid(cron_task["cron_definition"]):
                     cron.write()
