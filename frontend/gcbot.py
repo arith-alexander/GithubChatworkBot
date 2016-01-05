@@ -310,8 +310,16 @@ class GithubChatworkBot:
         if len(text) > self.chatwork_message_max_len:
             dots = '\n...'
 
-        # cutting to chatwork_message_max_len
+        # Replace github image tag with plain url
+        p = re.compile('!\[.*?\]\((.*?)\)')
+        text = p.sub('\g<1>', text)
+
+        # Cut to chatwork_message_max_len.
         text = text[:self.chatwork_message_max_len]
+        # Use /n, whitespace and 。as cut border.
+        text = "".join(re.split("([\n 。　]+)", text)[:-1])
+        # Cut excessive newlines at the end
+        text = text.strip('\n')
 
         # Replace ``` with [code] tag
         p = re.compile('```(.*?)(```|$)', re.DOTALL)
