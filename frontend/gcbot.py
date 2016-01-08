@@ -10,6 +10,7 @@ import cgi  # to get POST fields from Github
 import json  # to convert payload from json to dictionary
 import logging  # log handling
 import re
+from github import Github
 
 class GithubChatworkBot:
     """
@@ -64,6 +65,8 @@ class GithubChatworkBot:
     repository_room_map = {}
     # Chatwork API token
     chatwork_token = ''
+    # Github API token
+    github_token = ''
     # Chatwork message max length (to prevent flooding)
     chatwork_message_max_len = 200
     # Payload, that comes from Github. For internal usage.
@@ -242,9 +245,9 @@ class GithubChatworkBot:
             self._payload['pull_request']['html_url'] + '[/title]' + \
             str(self._payload['pull_request']['title']) + '[/info]'
 
-    def _send(self, body):
+    def _routeWebhookEventToRoom(self, body):
         """
-        Sending POST request to Chatwork with Curl
+        Route webhook event message (such as new issues, comments etc) to corresponding Chatwork room.
         :param body: String - Content of message, that will be sent to Chatwork
         """
         room_ids = []
@@ -253,16 +256,29 @@ class GithubChatworkBot:
         else:
             room_ids = self.repository_room_map[self._payload['repository']['name']]
         for room_id in room_ids:
-            socket.setdefaulttimeout(30)
-            url = 'https://api.chatwork.com/v1/rooms/' + str(room_id) + '/messages'
-            headers = {"X-ChatWorkToken": self.chatwork_token}
-            data = urllib.parse.urlencode({"body": body})
-            data = data.encode('utf-8') # data should be bytes
-            req = urllib.request.Request(url, data, headers)
-            with urllib.request.urlopen(req) as response:
-                response_data = response.read()
+            endpoint = '/rooms/' + str(room_id) + '/messages'
+            data = {"body": body}
+            self.chatworkApiRequest(endpoint, data)
 
-    def execute(self):
+    def chatworkApiRequest(self, endpoint, data):
+        """
+        Send POST request to Chatwork
+        :param endpoint: String - Chatwork API endpoint (for example, "/rooms/12345/messages")
+        :param data: Dictionary - Post data, that will be sent to Chatwork API
+        :return: String - response from Chatwork API
+        """
+        response_data = False
+        socket.setdefaulttimeout(30)
+        url = 'https://api.chatwork.com/v1'
+        headers = {"X-ChatWorkToken": self.chatwork_token}
+        data = urllib.parse.urlencode(data)
+        data = data.encode('utf-8') # data should be bytes
+        req = urllib.request.Request(url + endpoint, data, headers)
+        with urllib.request.urlopen(req) as response:
+            response_data = response.read()
+        return response_data
+
+    def executeWebhookHandler(self):
         """
         Setting event handlers and executing POST process.
         """
@@ -295,7 +311,7 @@ class GithubChatworkBot:
         else:
             self._log('Execution failed: event handler is not set.', 'CRITICAL')
 
-        self._send(body)
+        self._routeWebhookEventToRoom(body)
 
     def _filterInnerContent(self, text):
         """
@@ -345,3 +361,33 @@ class GithubChatworkBot:
             if level == 'CRITICAL':
                 logging.critical(text)
                 sys.exit(0)
+
+    def executeCronTask(self, cron_task_name, params):
+        """
+        Execute cron task.
+        As opposed to webhook handler methods, this method has no need of payload parameters and called by crontab (web server is not needed).
+        :param cron_task_name: String - identifier of cron task, that will be executed.
+        :param params: Array - Additional parameters (vary from task to task).
+        :return: Any - Execution result.
+        """
+        result = ""
+
+        # Send list of ready PRs to designated Chatwork room, if present.
+        if cron_task_name == "ready_pr":
+            # Setup Github object
+            if not self.github_token:
+                return "Github API key not found"
+            github = Github(self.github_token)
+            repository_str = ""
+            for repository in params["repositories"]:
+                repository_str += " repo:" + repository
+            # Search for ready PRs
+            for pr in github.search_issues("[READY] state:open type:pr in:title " + repository_str, sort="updated", order="asc"):
+                result += pr.title + "\n" + pr.html_url + "\n"
+            # Send notification to Chatwork
+            if result:
+                result = "[info][title]Ready PR is found[/title]" + result + "[/info]"
+                self.chatworkApiRequest('/rooms/' + params["room_id"] + '/messages', {"body": result})
+            return result
+        else:
+            return "Cron task handler not found"
