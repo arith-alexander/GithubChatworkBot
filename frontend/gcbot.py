@@ -330,8 +330,10 @@ class GithubChatworkBot:
 
         # Cut to chatwork_message_max_len.
         text = text[:self.chatwork_message_max_len]
-        # Use /n, whitespace and 。as cut border.
-        text = "".join(re.split("([\n 。　]+)", text)[:-1])
+        # Use /n, whitespace,、 and 。as cut border.
+        cutted_text = "".join(re.split("([\n 。　、]+)", text)[:-1])
+        if cutted_text:
+            text = cutted_text
         # Cut excessive newlines at the end
         text = text.strip('\n')
 
