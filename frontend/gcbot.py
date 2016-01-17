@@ -381,9 +381,14 @@ class GithubChatworkBot:
             repository_str = ""
             for repository in params["repositories"]:
                 repository_str += " repo:" + repository
-            # Search for ready PRs
-            for pr in github.search_issues("[READY] state:open type:pr in:title " + repository_str, sort="updated", order="asc"):
-                result += pr.title + "\n" + pr.html_url + "\n"
+            # Search for "ready" and "for review" PRs
+            search_patterns = [
+                "[READY]",
+                "[FOR REVIEW]"
+            ]
+            for search_pattern in search_patterns:
+                for pr in github.search_issues(search_pattern + " state:open type:pr in:title " + repository_str, sort="updated", order="asc"):
+                    result += pr.title + "\n" + pr.html_url + "\n"
             # Send notification to Chatwork
             if result:
                 result = "[info][title]Ready PR is found[/title]" + result + "[/info]"
