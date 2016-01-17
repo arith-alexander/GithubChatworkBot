@@ -72,7 +72,6 @@ class GithubChatworkBot:
     # Chatwork message max length (to prevent flooding)
     chatwork_message_max_len = 200
     # Payload, that comes from Github. For internal usage.
-
     _payload = {}
 
     def setPayload(self, github_post_data):
