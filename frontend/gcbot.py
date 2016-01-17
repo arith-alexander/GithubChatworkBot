@@ -11,6 +11,8 @@ import json  # to convert payload from json to dictionary
 import logging  # log handling
 import re
 from github import Github
+import time
+import datetime
 
 class GithubChatworkBot:
     """
@@ -70,6 +72,7 @@ class GithubChatworkBot:
     # Chatwork message max length (to prevent flooding)
     chatwork_message_max_len = 200
     # Payload, that comes from Github. For internal usage.
+
     _payload = {}
 
     def setPayload(self, github_post_data):
@@ -97,6 +100,17 @@ class GithubChatworkBot:
             if github_account == map_github_account:
                 return '[piconname:' + map_chatwork_acount + ']'
         return "unknown (" + github_account + ")"
+
+    def _getChatworkUserIdByGithubName(self, github_account):
+        """
+        Convert github account name into Chatwork user id.
+        :param github_account: String - Github account name
+        :return: Integer - Chatwork user id or 0, if user not found
+        """
+        for map_chatwork_acount, map_github_account in self.chatwork_github_account_map.items():
+            if github_account == map_github_account:
+                return map_chatwork_acount
+        return 0
 
     def _buildAddresseeString(self, guthub_addressee_list, text=""):
         """
@@ -311,11 +325,11 @@ class GithubChatworkBot:
 
         self._routeWebhookEventToRoom(body)
 
-    def _filterInnerContent(self, text):
+    def _cutInnerContent(self, text):
         """
-        Filtering inner content of the message. Cutting and replacing.
+        Cut message to designated length and add "..." at the end.
         :param text: String - Inner content of the message (after [title] tag inside [info] tag)
-        :return: text: String - Filtered inner content of the message
+        :return: text: String - Cutted inner content of the message
         """
         text = str(text)
 
@@ -324,24 +338,90 @@ class GithubChatworkBot:
         if len(text) > self.chatwork_message_max_len:
             dots = '\n...'
 
-        # Replace github image tag with plain url
-        p = re.compile('!\[.*?\]\((.*?)\)')
-        text = p.sub('\g<1>', text)
-
         # Cut to chatwork_message_max_len.
         text = text[:self.chatwork_message_max_len]
         # Use /n, whitespace,、 and 。as cut border.
         cutted_text = "".join(re.split("([\n 。　、]+)", text)[:-1])
-        if cutted_text:
+        if cutted_text and dots:
             text = cutted_text
         # Cut excessive newlines at the end
         text = text.strip('\n')
+
+        # If [/code] tag was cutted, then add it
+        if text.find("[code]") != -1 and text.find("[/code]") == -1:
+            text += "[/code]"
+
+        return text + dots
+
+    def _filterInnerContent(self, text):
+        """
+        Filtering inner content of the message. Replace markdown constructions and execute special constructions, if found.
+        :param text: String - Inner content of the message (after [title] tag inside [info] tag)
+        :return: text: String - Filtered inner content of the message
+        """
+        text = str(text)
+
+        # Replace github image tag with plain url
+        p = re.compile('!\[.*?\]\((.*?)\)')
+        text = p.sub('\g<1>', text)
 
         # Replace ``` with [code] tag
         p = re.compile('```(.*?)(```|$)', re.DOTALL)
         text = p.sub('[code]\g<1>[/code]', text)
 
-        return text + dots
+        # Check if content includes special constructions and execute required actions
+        text = self._processSpecialConstruction("create_chatwork_task", text)
+
+        return self._cutInnerContent(text)
+
+    def _processSpecialConstruction(self, construction_type, text):
+        """
+        Check if text includes special constructions and execute required actions
+        :param construction_type: String - One of the following values: "create_chatwork_task"
+        :param text: String - Text, which supposed to include special constructions
+        :return: text: String - Filtered text
+        """
+
+        if construction_type == "create_chatwork_task":
+            # If message content starts with construction like !task:@somename @anothername:2016.01.11:123123 567567
+            # then we must create new chatwork task, assigned to chatwork users somename and anothername
+            # and send it to chatwork rooms id 123123 and 567567.
+            # Task content will be equivalent to message content and deadline will be set to 2016.01.11.
+            # Only first parameter are required, the rest are optional.
+            # If deadline parameter not set, it will be set with current date.
+            # If room parameter not set, it will be set according chatwork_github_account_map configuration.
+            match = re.search("^!task:([^:\n]+):?(\d\d\d\d\.\d\d\.\d\d)?:?([\d ]+)?", text)
+            if match:
+                # Convert data to chatwork format
+                github_assignees = match.group(1)
+                chatwork_assignees = []
+                for github_assignee in github_assignees.split():
+                    chatwork_assignees.append(self._getChatworkUserIdByGithubName(github_assignee.replace("@", "")))
+
+                if match.group(2) is None:
+                    chatwork_deadline = int(time.time())
+                else:
+                    dt = datetime.datetime.strptime(match.group(2), '%Y.%m.%d')
+                    chatwork_deadline = int(time.mktime(dt.timetuple()))
+
+                if match.group(3) is None:
+                    chatwork_rooms = self.repository_room_map[self._payload['repository']['name']]
+                else:
+                    chatwork_rooms = match.group(3)
+                    chatwork_rooms = chatwork_rooms.split()
+
+                # Remove special construction itself from message content
+                text = '\n'.join(text.split('\n')[1:])
+
+                # Create new chatwork task
+                for chatwork_room in chatwork_rooms:
+                    self.chatworkApiRequest(
+                        '/rooms/' + chatwork_room + '/tasks',
+                        {"body": text, "limit": chatwork_deadline, "to_ids": ",".join(chatwork_assignees)}
+                    )
+                sys.exit(0)
+
+        return text
 
     def _log(self, text, level):
         """
