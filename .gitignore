@@ -5,3 +5,4 @@ logs/errors/*.txt
 .idea/
 backend/__pycache__/
 frontend/__pycache__/
+.python-version
