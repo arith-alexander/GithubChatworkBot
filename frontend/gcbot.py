@@ -13,6 +13,7 @@ import re
 from github import Github
 import time
 import datetime
+import cwui
 
 class GithubChatworkBot:
     """
@@ -73,6 +74,14 @@ class GithubChatworkBot:
     chatwork_message_max_len = 200
     # Payload, that comes from Github. For internal usage.
     _payload = {}
+    # True for send requests to UI, False for API
+    ui_active = True
+    # UI login account email
+    ui_login_email = ""
+    # UI login account ID
+    ui_login_id = ""
+    # UI login password
+    ui_login_password = ""
 
     def setPayload(self, github_post_data):
         """
@@ -269,7 +278,26 @@ class GithubChatworkBot:
         for room_id in room_ids:
             endpoint = '/rooms/' + str(room_id) + '/messages'
             data = {"body": body}
-            self.chatworkApiRequest(endpoint, data)
+            self.chatworkRequest(endpoint, data)
+
+    def chatworkRequest(self, endpoint, data):
+        """
+        Send POST request to Chatwork
+        :param endpoint: String - Chatwork API endpoint (for example, "/rooms/12345/messages")
+        :param data: Dictionary - Post data, that will be sent to Chatwork API
+        :return: String - response from Chatwork API
+        """
+
+        # Send message requests through UI
+        if self.ui_active:
+            match = re.search("/rooms/([0-9]+)/messages", endpoint)
+            if match:
+                room_id = match.group(1)
+                cwuiInstance = cwui.ChatworkUI(self.ui_login_email, self.ui_login_id, self.ui_login_password)
+                return cwuiInstance.message(data["body"], room_id)
+
+        # Send all other requests through API
+        return self.chatworkApiRequest(endpoint, data)
 
     def chatworkApiRequest(self, endpoint, data):
         """
@@ -414,7 +442,7 @@ class GithubChatworkBot:
 
                 # Create new chatwork task
                 for chatwork_room in chatwork_rooms:
-                    self.chatworkApiRequest(
+                    self.chatworkRequest(
                         '/rooms/' + chatwork_room + '/tasks',
                         {"body": text, "limit": chatwork_deadline, "to_ids": ",".join(chatwork_assignees)}
                     )
@@ -467,7 +495,7 @@ class GithubChatworkBot:
             # Send notification to Chatwork
             if result:
                 result = "[info][title]Ready PR is found[/title]" + result + "[/info]"
-                self.chatworkApiRequest('/rooms/' + params["room_id"] + '/messages', {"body": result})
+                self.chatworkRequest('/rooms/' + params["room_id"] + '/messages', {"body": result})
             return result
         else:
             return "Cron task handler not found"

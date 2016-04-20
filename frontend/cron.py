@@ -3,7 +3,7 @@
 
 # This script is called by cron. You can find crontab config in config.json
 # To view all crontab tasks, use this ssh command: for user in $(cut -f1 -d: /etc/passwd); do crontab -u $user -l; done
-# To execute task directly by ssh, use this command: python3 cron.py taskname
+# To execute task directly by ssh, use this command in script root directory: python3 frontend/cron.py taskname
 # You can test cron definition here http://cron.schlitt.info
 # Log is here /var/log/cron
 
