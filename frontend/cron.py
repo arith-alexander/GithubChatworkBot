@@ -46,6 +46,11 @@ def main():
         botInstance.chatwork_token = config["chatwork_token"]
         botInstance.github_token = config["github_token"]
         botInstance.logging = config["logging"]
+        botInstance.chatwork_github_account_map = config["chatwork_github_account_map"]
+        botInstance.repository_room_map = config["repository_room_map"]
+        botInstance.ui_login_email = config["ui"]["login_email"]
+        botInstance.ui_login_id = config["ui"]["login_id"]
+        botInstance.ui_login_password = config["ui"]["login_password"]
         return botInstance.executeCronTask(cron_task_name, config["cron"][cron_task_name])
 
 if __name__ == "__main__":
