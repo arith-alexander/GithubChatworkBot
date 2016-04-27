@@ -104,9 +104,9 @@ class GithubChatworkBot:
         :param github_account: String
         :return: String - "icon+username" code [piconname:123]
         """
-        for map_chatwork_acount, map_github_account in self.chatwork_github_account_map.items():
+        for map_github_account, account_settings in self.chatwork_github_account_map.items():
             if github_account == map_github_account:
-                return '[piconname:' + map_chatwork_acount + ']'
+                return '[piconname:' + account_settings['chatwork_account'] + ']'
         return "unknown (" + github_account + ")"
 
     def _getChatworkUserIdByGithubName(self, github_account):
@@ -115,10 +115,22 @@ class GithubChatworkBot:
         :param github_account: String - Github account name
         :return: Integer - Chatwork user id or 0, if user not found
         """
-        for map_chatwork_acount, map_github_account in self.chatwork_github_account_map.items():
+        for map_github_account, account_settings in self.chatwork_github_account_map.items():
             if github_account == map_github_account:
-                return map_chatwork_acount
+                return account_settings['chatwork_account']
         return 0
+
+    def _getAddresseeListFromMessageContents(self, text):
+        """
+        Extract addressee list from given chatwork-formatted message contents.
+        :param text: String - Chatwork-formatted message contents
+        :return: List - Chatwork user id list
+        """
+        addressee_list = []
+        for map_github_account, account_settings in self.chatwork_github_account_map.items():
+            if re.search('\[To:' + account_settings['chatwork_account'] + '\]', text):
+                addressee_list.append(account_settings['chatwork_account'])
+        return addressee_list
 
     def _buildAddresseeString(self, guthub_addressee_list, text=""):
         """
@@ -130,23 +142,23 @@ class GithubChatworkBot:
         addressee_string = ''
 
         # Parsing @username from github comment text. If found, add this username as chatwork addressee.
-        for chatwork_acount, github_account in self.chatwork_github_account_map.items():
+        for github_account, account_settings in self.chatwork_github_account_map.items():
             if text.find(github_account) > -1:
-                chatwork_addressee_list.append(chatwork_acount)
+                chatwork_addressee_list.append(account_settings['chatwork_account'])
 
         # Converting guthub_addressee_list to chatwork_addressee_list.
-        for chatwork_acount, github_account in self.chatwork_github_account_map.items():
+        for github_account, account_settings in self.chatwork_github_account_map.items():
             if github_account in guthub_addressee_list:
-                chatwork_addressee_list.append(chatwork_acount)
+                chatwork_addressee_list.append(account_settings['chatwork_account'])
 
         # Remove duplicates.
         chatwork_addressee_list = list(set(chatwork_addressee_list))
 
         # Remove event sender account from list. He already knows about event.
-        for chatwork_acount, github_account in self.chatwork_github_account_map.items():
+        for github_account, account_settings in self.chatwork_github_account_map.items():
             if github_account == self._payload['sender']['login']:
-                if chatwork_acount in chatwork_addressee_list:
-                    chatwork_addressee_list.remove(chatwork_acount)
+                if account_settings['chatwork_account'] in chatwork_addressee_list:
+                    chatwork_addressee_list.remove(account_settings['chatwork_account'])
 
         # Building and returning chatwork addressee string.
         for addressee in chatwork_addressee_list:
@@ -270,11 +282,19 @@ class GithubChatworkBot:
         Route webhook event message (such as new issues, comments etc) to corresponding Chatwork room.
         :param body: String - Content of message, that will be sent to Chatwork
         """
+        # Route message by repository name
         room_ids = []
-        if self._payload['repository']['name'] not in self.repository_room_map.keys():
-            self._log('Execution failed: room not set for repository ' + self._payload['repository']['name'], 'CRITICAL')
-        else:
+        if self._payload['repository']['name']  in self.repository_room_map.keys():
             room_ids = self.repository_room_map[self._payload['repository']['name']]
+
+        # Route message by addressee
+        addressee_list = self._getAddresseeListFromMessageContents(body)
+        for addressee in addressee_list:
+            for github_account, account_settings in self.chatwork_github_account_map.items():
+                if addressee == account_settings['chatwork_account']:
+                    room_ids += account_settings['chatwork_rooms']
+
+        # Send message
         for room_id in room_ids:
             endpoint = '/rooms/' + str(room_id) + '/messages'
             data = {"body": body}
