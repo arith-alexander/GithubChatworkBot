@@ -168,13 +168,13 @@ class GithubChatworkBot:
     def _buildIssueCommentedMessage(self):
         """
         Build message content, corresponding to github "Issue commented" event.
-        To: issue assignee, issue author and @username.
+        To: issue assignees, issue author and @username.
         """
         to_list = [self._payload['issue']['user']['login']]
 
-        if self._payload['issue']['assignee']:
-            if self._payload['issue']['assignee']['login'] != self._payload['issue']['user']['login']:
-                to_list.append(self._payload['issue']['assignee']['login'])
+        for assignee in self._payload['issue']['assignees']:
+            if assignee['login'] != self._payload['issue']['user']['login']:
+                to_list.append(assignee['login'])
 
         return self._buildAddresseeString(to_list, self._payload['comment']['body']) + \
             '[info][title]Issue Commented by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
@@ -208,12 +208,13 @@ class GithubChatworkBot:
     def _buildIssueClosedMessage(self):
         """
         Build message content, corresponding to github "Issue closed" event.
-        To: issue assignee and issue author and @username in body.
+        To: issue assignees and issue author and @username in body.
         """
         to_list = [self._payload['issue']['user']['login']]
-        if self._payload['issue']['assignee']:
-            if self._payload['issue']['assignee']['login'] != self._payload['issue']['user']['login']:
-                to_list.append(self._payload['issue']['assignee']['login'])
+
+        for assignee in self._payload['issue']['assignees']:
+            if assignee['login'] != self._payload['issue']['user']['login']:
+                to_list.append(assignee['login'])
 
         return self._buildAddresseeString(guthub_addressee_list=to_list, text=self._payload['issue']['body']) + \
             '[info][title]Issue Closed by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
@@ -233,9 +234,13 @@ class GithubChatworkBot:
     def _buildPRClosedMessage(self):
         """
         Build message content, corresponding to github "PR closed" event.
-        To: pull request author.
+        To: pull request author and assignees.
         """
         to_list = [self._payload['pull_request']['user']['login']]
+
+        for assignee in self._payload['pull_request']['assignees']:
+            if assignee['login'] != self._payload['pull_request']['user']['login']:
+                to_list.append(assignee['login'])
 
         return self._buildAddresseeString(guthub_addressee_list=to_list) + \
             '[info][title]PR Closed by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
@@ -245,9 +250,13 @@ class GithubChatworkBot:
     def _buildPRCommentedMessage(self):
         """
         Build message content, corresponding to github "PR commented" event.
-        To: pull request author and @username.
+        To: pull request author, assignees and @username.
         """
         to_list = [self._payload['pull_request']['user']['login']]
+
+        for assignee in self._payload['pull_request']['assignees']:
+            if assignee['login'] != self._payload['pull_request']['user']['login']:
+                to_list.append(assignee['login'])
 
         return self._buildAddresseeString(to_list, self._payload['comment']['body']) + \
             '[info][title]PR Commented by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
@@ -259,6 +268,7 @@ class GithubChatworkBot:
         Build message content, corresponding to github "Commit commented" event.
         To: All and @username (API does not return commit author, maybe need additional request).
         """
+
         return self._buildAddresseeString(guthub_addressee_list=[], text=self._payload['comment']['body']) + \
             '[info][title]Commit Commented by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
             self._payload['comment']['html_url'] + '[/title]' + \
