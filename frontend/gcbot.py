@@ -70,8 +70,6 @@ class GithubChatworkBot:
     chatwork_token = ''
     # Github API token
     github_token = ''
-    # Chatwork message max length (to prevent flooding)
-    chatwork_message_max_len = 200
     # Payload, that comes from Github. For internal usage.
     _payload = {}
     # True for send requests to UI, False for API
@@ -120,19 +118,7 @@ class GithubChatworkBot:
                 return account_settings['chatwork_account']
         return 0
 
-    def _getAddresseeListFromMessageContents(self, text):
-        """
-        Extract addressee list from given chatwork-formatted message contents.
-        :param text: String - Chatwork-formatted message contents
-        :return: List - Chatwork user id list
-        """
-        addressee_list = []
-        for map_github_account, account_settings in self.chatwork_github_account_map.items():
-            if re.search('\[To:' + account_settings['chatwork_account'] + '\]', text):
-                addressee_list.append(account_settings['chatwork_account'])
-        return addressee_list
-
-    def _buildAddresseeString(self, guthub_addressee_list, text=""):
+    def _buildAddresseeList(self, guthub_addressee_list, text=""):
         """
         Build addressee string (chatwork "To:" field)
         :param guthub_addressee_list: List - List of github addressee, if present.
@@ -160,10 +146,7 @@ class GithubChatworkBot:
                 if account_settings['chatwork_account'] in chatwork_addressee_list:
                     chatwork_addressee_list.remove(account_settings['chatwork_account'])
 
-        # Building and returning chatwork addressee string.
-        for addressee in chatwork_addressee_list:
-            addressee_string += '[To:' + str(addressee) + '] '
-        return addressee_string
+        return chatwork_addressee_list
 
     def _buildIssueCommentedMessage(self):
         """
@@ -176,6 +159,7 @@ class GithubChatworkBot:
             if assignee['login'] != self._payload['issue']['user']['login']:
                 to_list.append(assignee['login'])
 
+        # replace with message class
         return self._buildAddresseeString(to_list, self._payload['comment']['body']) + \
             '[info][title]Issue Commented by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
             self._payload['comment']['html_url'] + '[/title]' + \
@@ -186,6 +170,7 @@ class GithubChatworkBot:
         Build message content, corresponding to github "Issue opened" event
         To all and @username.
         """
+        # replace with message class
         return self._buildAddresseeString(guthub_addressee_list=[], text=self._payload['issue']['body']) + \
             '[info][title]Issue Opened by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
             self._payload['issue']['html_url'] + '[/title]' + \
@@ -199,6 +184,7 @@ class GithubChatworkBot:
         """
         to_list = [self._payload['assignee']['login']]
 
+        # replace with message class
         return self._buildAddresseeString(guthub_addressee_list=to_list, text=self._payload['issue']['body']) + \
             '[info][title]Issue Assigned to ' + self._getChatworkUsericonByGithubName(self._payload['assignee']['login']) + \
             ' by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
@@ -216,6 +202,7 @@ class GithubChatworkBot:
             if assignee['login'] != self._payload['issue']['user']['login']:
                 to_list.append(assignee['login'])
 
+        # replace with message class
         return self._buildAddresseeString(guthub_addressee_list=to_list, text=self._payload['issue']['body']) + \
             '[info][title]Issue Closed by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
             self._payload['issue']['html_url'] + '[/title]' + \
@@ -226,6 +213,7 @@ class GithubChatworkBot:
         Build message content, corresponding to github "PR opened" event.
         To all.
         """
+        # replace with message class
         return '[info][title]PR Opened by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
             self._payload['pull_request']['html_url'] + '[/title]' + \
             str(self._payload['pull_request']['title']) + '\n\n' + \
@@ -242,6 +230,7 @@ class GithubChatworkBot:
             if assignee['login'] != self._payload['pull_request']['user']['login']:
                 to_list.append(assignee['login'])
 
+        # replace with message class
         return self._buildAddresseeString(guthub_addressee_list=to_list) + \
             '[info][title]PR Closed by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
             self._payload['pull_request']['html_url'] + '[/title]' + \
@@ -258,6 +247,7 @@ class GithubChatworkBot:
             if assignee['login'] != self._payload['pull_request']['user']['login']:
                 to_list.append(assignee['login'])
 
+        # replace with message class
         return self._buildAddresseeString(to_list, self._payload['comment']['body']) + \
             '[info][title]PR Commented by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
             self._payload['comment']['html_url'] + '[/title]' + \
@@ -269,6 +259,7 @@ class GithubChatworkBot:
         To: All and @username (API does not return commit author, maybe need additional request).
         """
 
+        # replace with message class
         return self._buildAddresseeString(guthub_addressee_list=[], text=self._payload['comment']['body']) + \
             '[info][title]Commit Commented by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
             self._payload['comment']['html_url'] + '[/title]' + \
@@ -281,6 +272,7 @@ class GithubChatworkBot:
         """
         to_list = [self._payload['assignee']['login']]
 
+        # replace with message class
         return self._buildAddresseeString(guthub_addressee_list=to_list) + \
             '[info][title]PR Assigned to ' + self._getChatworkUsericonByGithubName(self._payload['assignee']['login']) + \
             ' by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
@@ -381,55 +373,6 @@ class GithubChatworkBot:
             self._log('Execution failed: event handler is not set.', 'CRITICAL')
 
         self._routeWebhookEventToRoom(body)
-
-    def _cutInnerContent(self, text):
-        """
-        Cut message to designated length and add "..." at the end.
-        :param text: String - Inner content of the message (after [title] tag inside [info] tag)
-        :return: text: String - Cutted inner content of the message
-        """
-        text = str(text)
-
-        # adding dots at the end of contents if contents length too large
-        dots = ''
-        if len(text) > self.chatwork_message_max_len:
-            dots = '\n...'
-
-        # Cut to chatwork_message_max_len.
-        text = text[:self.chatwork_message_max_len]
-        # Use /n, whitespace,、 and 。as cut border.
-        cutted_text = "".join(re.split("([\n 。　、]+)", text)[:-1])
-        if cutted_text and dots:
-            text = cutted_text
-        # Cut excessive newlines at the end
-        text = text.strip('\n')
-
-        # If [/code] tag was cutted, then add it
-        if text.find("[code]") != -1 and text.find("[/code]") == -1:
-            text += "[/code]"
-
-        return text + dots
-
-    def _filterInnerContent(self, text):
-        """
-        Filtering inner content of the message. Replace markdown constructions and execute special constructions, if found.
-        :param text: String - Inner content of the message (after [title] tag inside [info] tag)
-        :return: text: String - Filtered inner content of the message
-        """
-        text = str(text)
-
-        # Replace github image tag with plain url
-        p = re.compile('!\[.*?\]\((.*?)\)')
-        text = p.sub('\g<1>', text)
-
-        # Replace ``` with [code] tag
-        p = re.compile('```(.*?)(```|$)', re.DOTALL)
-        text = p.sub('[code]\g<1>[/code]', text)
-
-        # Check if content includes special constructions and execute required actions
-        text = self._processSpecialConstruction("create_chatwork_task", text)
-
-        return self._cutInnerContent(text)
 
     def _processSpecialConstruction(self, construction_type, text):
         """
