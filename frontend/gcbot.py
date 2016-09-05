@@ -14,6 +14,7 @@ from github import Github
 import time
 import datetime
 import cwui
+import cwmessage
 
 class GithubChatworkBot:
     """
@@ -159,11 +160,13 @@ class GithubChatworkBot:
             if assignee['login'] != self._payload['issue']['user']['login']:
                 to_list.append(assignee['login'])
 
-        # replace with message class
-        return self._buildAddresseeString(to_list, self._payload['comment']['body']) + \
-            '[info][title]Issue Commented by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
-            self._payload['comment']['html_url'] + '[/title]' + \
-            self._filterInnerContent(self._payload['comment']['body']) + '[/info]'
+        message = cwmessage.ChatworkMessage
+        message.setAddresseeList(self._buildAddresseeList(to_list, self._payload['comment']['body']))
+        message.setTitle('Issue Commented by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
+                self._payload['comment']['html_url'])
+        message.setBody(self._payload['comment']['body'])
+
+        return message.getFormattedContents()
 
     def _buildIssueOpenedMessage(self):
         """
