@@ -151,8 +151,9 @@ class GithubChatworkBot:
 
     def _buildIssueCommentedMessage(self):
         """
-        Build message content, corresponding to github "Issue commented" event.
+        Build message, corresponding to github "Issue commented" event.
         To: issue assignees, issue author and @username.
+        :return: Object of class ChatworkMessage
         """
         to_list = [self._payload['issue']['user']['login']]
 
@@ -164,40 +165,47 @@ class GithubChatworkBot:
         message.setAddresseeList(self._buildAddresseeList(to_list, self._payload['comment']['body']))
         message.setTitle('Issue Commented by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
                 self._payload['comment']['html_url'])
-        message.setBody(self._payload['comment']['body'])
+        message.setBody(str(self._payload['comment']['body']))
 
-        return message.getFormattedContents()
+        return message
 
     def _buildIssueOpenedMessage(self):
         """
         Build message content, corresponding to github "Issue opened" event
-        To all and @username.
+        To @username.
+        :return: Object of class ChatworkMessage
         """
-        # replace with message class
-        return self._buildAddresseeString(guthub_addressee_list=[], text=self._payload['issue']['body']) + \
-            '[info][title]Issue Opened by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
-            self._payload['issue']['html_url'] + '[/title]' + \
-            str(self._payload['issue']['title']) + '\n\n' + \
-            self._filterInnerContent(self._payload['issue']['body']) + '[/info]'
+        message = cwmessage.ChatworkMessage
+        message.setAddresseeList(self._buildAddresseeList([], self._payload['issue']['body']))
+        message.setTitle('Issue Opened by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
+            self._payload['issue']['html_url'])
+        message.setBody(str(self._payload['issue']['title']) + '\n\n' + \
+            self._payload['issue']['body'])
+
+        return message
 
     def _buildIssueAssignedMessage(self):
         """
         Build message content, corresponding to github "Issue assigned" event.
         To: issue assignee and @username in body.
+        :return: Object of class ChatworkMessage
         """
         to_list = [self._payload['assignee']['login']]
 
-        # replace with message class
-        return self._buildAddresseeString(guthub_addressee_list=to_list, text=self._payload['issue']['body']) + \
-            '[info][title]Issue Assigned to ' + self._getChatworkUsericonByGithubName(self._payload['assignee']['login']) + \
+        message = cwmessage.ChatworkMessage
+        message.setAddresseeList(self._buildAddresseeList(to_list, self._payload['issue']['body']))
+        message.setTitle('Issue Assigned to ' + self._getChatworkUsericonByGithubName(self._payload['assignee']['login']) + \
             ' by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
-            self._payload['issue']['html_url'] + '[/title]' + \
-            str(self._payload['issue']['title']) + '[/info]'
+            self._payload['issue']['html_url'])
+        message.setBody(str(self._payload['issue']['title']))
+
+        return message
 
     def _buildIssueClosedMessage(self):
         """
         Build message content, corresponding to github "Issue closed" event.
         To: issue assignees and issue author and @username in body.
+        :return: Object of class ChatworkMessage
         """
         to_list = [self._payload['issue']['user']['login']]
 
@@ -205,27 +213,33 @@ class GithubChatworkBot:
             if assignee['login'] != self._payload['issue']['user']['login']:
                 to_list.append(assignee['login'])
 
-        # replace with message class
-        return self._buildAddresseeString(guthub_addressee_list=to_list, text=self._payload['issue']['body']) + \
-            '[info][title]Issue Closed by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
-            self._payload['issue']['html_url'] + '[/title]' + \
-            str(self._payload['issue']['title']) + '[/info]'
+        message = cwmessage.ChatworkMessage
+        message.setAddresseeList(self._buildAddresseeList(to_list, self._payload['issue']['body']))
+        message.setTitle('Issue Closed by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
+            self._payload['issue']['html_url'])
+        message.setBody(str(self._payload['issue']['title']))
+
+        return message
 
     def _buildPROpenedMessage(self):
         """
         Build message content, corresponding to github "PR opened" event.
-        To all.
+        To @username.
+        :return: Object of class ChatworkMessage
         """
-        # replace with message class
-        return '[info][title]PR Opened by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
-            self._payload['pull_request']['html_url'] + '[/title]' + \
-            str(self._payload['pull_request']['title']) + '\n\n' + \
-            self._filterInnerContent(self._payload['pull_request']['body']) + '[/info]'
+        message = cwmessage.ChatworkMessage
+        message.setAddresseeList(self._buildAddresseeList([], self._payload['pull_request']['body']))
+        message.setTitle('PR Opened by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
+            self._payload['pull_request']['html_url'])
+        message.setBody(str(self._payload['pull_request']['body']))
+
+        return message
 
     def _buildPRClosedMessage(self):
         """
         Build message content, corresponding to github "PR closed" event.
         To: pull request author and assignees.
+        :return: Object of class ChatworkMessage
         """
         to_list = [self._payload['pull_request']['user']['login']]
 
@@ -233,16 +247,19 @@ class GithubChatworkBot:
             if assignee['login'] != self._payload['pull_request']['user']['login']:
                 to_list.append(assignee['login'])
 
-        # replace with message class
-        return self._buildAddresseeString(guthub_addressee_list=to_list) + \
-            '[info][title]PR Closed by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
-            self._payload['pull_request']['html_url'] + '[/title]' + \
-            str(self._payload['pull_request']['title']) + '[/info]'
+        message = cwmessage.ChatworkMessage
+        message.setAddresseeList(self._buildAddresseeList(to_list))
+        message.setTitle('PR Closed by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
+            self._payload['pull_request']['html_url'])
+        message.setBody(str(self._payload['pull_request']['title']))
+
+        return message
 
     def _buildPRCommentedMessage(self):
         """
         Build message content, corresponding to github "PR commented" event.
         To: pull request author, assignees and @username.
+        :return: Object of class ChatworkMessage
         """
         to_list = [self._payload['pull_request']['user']['login']]
 
@@ -250,37 +267,44 @@ class GithubChatworkBot:
             if assignee['login'] != self._payload['pull_request']['user']['login']:
                 to_list.append(assignee['login'])
 
-        # replace with message class
-        return self._buildAddresseeString(to_list, self._payload['comment']['body']) + \
-            '[info][title]PR Commented by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
-            self._payload['comment']['html_url'] + '[/title]' + \
-            self._filterInnerContent(self._payload['comment']['body']) + '[/info]'
+        message = cwmessage.ChatworkMessage
+        message.setAddresseeList(self._buildAddresseeList(to_list, self._payload['comment']['body']))
+        message.setTitle('PR Commented by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
+            self._payload['comment']['html_url'])
+        message.setBody(str(self._payload['comment']['body']))
+
+        return message
 
     def _buildCommitCommentedMessage(self):
         """
         Build message content, corresponding to github "Commit commented" event.
-        To: All and @username (API does not return commit author, maybe need additional request).
+        To: @username (API does not return commit author, maybe need additional request).
+        :return: Object of class ChatworkMessage
         """
+        message = cwmessage.ChatworkMessage
+        message.setAddresseeList(self._buildAddresseeList([], self._payload['comment']['body']))
+        message.setTitle('Commit Commented by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
+            self._payload['comment']['html_url'])
+        message.setBody(str(self._payload['comment']['body']))
 
-        # replace with message class
-        return self._buildAddresseeString(guthub_addressee_list=[], text=self._payload['comment']['body']) + \
-            '[info][title]Commit Commented by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
-            self._payload['comment']['html_url'] + '[/title]' + \
-            self._filterInnerContent(self._payload['comment']['body']) + '[/info]'
+        return message
 
     def _buildPRAssignedMessage(self):
         """
         Build message content, corresponding to github "Issue assigned" event.
         To: issue assignee.
+        :return: Object of class ChatworkMessage
         """
         to_list = [self._payload['assignee']['login']]
 
-        # replace with message class
-        return self._buildAddresseeString(guthub_addressee_list=to_list) + \
-            '[info][title]PR Assigned to ' + self._getChatworkUsericonByGithubName(self._payload['assignee']['login']) + \
+        message = cwmessage.ChatworkMessage
+        message.setAddresseeList(self._buildAddresseeList(to_list))
+        message.setTitle('PR Assigned to ' + self._getChatworkUsericonByGithubName(self._payload['assignee']['login']) + \
             ' by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
-            self._payload['pull_request']['html_url'] + '[/title]' + \
-            str(self._payload['pull_request']['title']) + '[/info]'
+            self._payload['pull_request']['html_url'])
+        message.setBody(str(self._payload['pull_request']['title']))
+
+        return message
 
     def _routeWebhookEventToRoom(self, body):
         """
@@ -353,35 +377,38 @@ class GithubChatworkBot:
         if not self.chatwork_token:
             self._log('Execution failed: chatwork token not set.', 'CRITICAL')
 
-        body = ''
+        message = ''
         if self._payload['action'] == 'created' and 'issue' in self._payload.keys():
-            body = self._buildIssueCommentedMessage()
+            message = self._buildIssueCommentedMessage()
         elif self._payload['action'] == 'opened' and 'issue' in self._payload.keys():
-            body = self._buildIssueOpenedMessage()
+            message = self._buildIssueOpenedMessage()
         elif self._payload['action'] == 'assigned' and 'issue' in self._payload.keys():
-            body = self._buildIssueAssignedMessage()
+            message = self._buildIssueAssignedMessage()
         elif self._payload['action'] == 'closed' and 'issue' in self._payload.keys():
-            body = self._buildIssueClosedMessage()
+            message = self._buildIssueClosedMessage()
         elif self._payload['action'] == 'opened' and 'pull_request' in self._payload.keys():
-            body = self._buildPROpenedMessage()
+            message = self._buildPROpenedMessage()
         elif self._payload['action'] == 'closed' and 'pull_request' in self._payload.keys():
-            body = self._buildPRClosedMessage()
+            message = self._buildPRClosedMessage()
         elif self._payload['action'] == 'created' and 'pull_request' in self._payload.keys():
-            body = self._buildPRCommentedMessage()
+            message = self._buildPRCommentedMessage()
         elif self._payload['action'] == 'assigned' and 'pull_request' in self._payload.keys():
-            body = self._buildPRAssignedMessage()
+            message = self._buildPRAssignedMessage()
         elif self._payload['action'] == 'created' and 'comment' in self._payload.keys():
-            body = self._buildCommitCommentedMessage()
+            message = self._buildCommitCommentedMessage()
         else:
             self._log('Execution failed: event handler is not set.', 'CRITICAL')
 
-        self._routeWebhookEventToRoom(body)
+        # Check if message content includes special constructions and execute required actions
+        self._processSpecialConstruction("create_chatwork_task", message)
 
-    def _processSpecialConstruction(self, construction_type, text):
+        self._routeWebhookEventToRoom(message.getFormattedContents())
+
+    def _processSpecialConstruction(self, construction_type, message):
         """
         Check if text includes special constructions and execute required actions
         :param construction_type: String - One of the following values: "create_chatwork_task"
-        :param text: String - Text, which supposed to include special constructions
+        :param message: Object of class ChatworkMessage, contents of which is supposed to include special constructions
         :return: text: String - Filtered text
         """
 
@@ -393,6 +420,7 @@ class GithubChatworkBot:
             # Only first parameter are required, the rest are optional.
             # If deadline parameter not set, it will be set with current date.
             # If room parameter not set, it will be set according chatwork_github_account_map configuration.
+            text = message.getRawBody()
             match = re.search("^!task:([^:\n]+):?(\d\d\d\d\.\d\d\.\d\d)?:?([\d ]+)?", text)
             if match:
                 # Convert data to chatwork format
@@ -423,8 +451,6 @@ class GithubChatworkBot:
                         {"body": text, "limit": chatwork_deadline, "to_ids": ",".join(chatwork_assignees)}
                     )
                 sys.exit(0)
-
-        return text
 
     def _log(self, text, level):
         """
