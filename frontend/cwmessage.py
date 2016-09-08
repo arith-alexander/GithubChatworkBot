@@ -50,6 +50,14 @@ class ChatworkMessage:
 
         return self._body
 
+    def getAddresseeList(self):
+        """
+        Addressee list getter.
+        :return: List - Addressee list (example: [645385, 836492])
+        """
+
+        return self._addressee_list;
+
     def _buildAddresseeString(self, chatwork_addressee_list):
         """
         Build addressee string (chatwork "To:" field)

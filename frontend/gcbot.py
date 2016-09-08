@@ -161,11 +161,11 @@ class GithubChatworkBot:
             if assignee['login'] != self._payload['issue']['user']['login']:
                 to_list.append(assignee['login'])
 
-        message = cwmessage.ChatworkMessage
+        message = cwmessage.ChatworkMessage()
         message.setAddresseeList(self._buildAddresseeList(to_list, self._payload['comment']['body']))
         message.setTitle('Issue Commented by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
                 self._payload['comment']['html_url'])
-        message.setBody(str(self._payload['comment']['body']))
+        message.setBody(self._payload['comment']['body'])
 
         return message
 
@@ -175,11 +175,11 @@ class GithubChatworkBot:
         To @username.
         :return: Object of class ChatworkMessage
         """
-        message = cwmessage.ChatworkMessage
+        message = cwmessage.ChatworkMessage()
         message.setAddresseeList(self._buildAddresseeList([], self._payload['issue']['body']))
         message.setTitle('Issue Opened by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
             self._payload['issue']['html_url'])
-        message.setBody(str(self._payload['issue']['title']) + '\n\n' + \
+        message.setBody(self._payload['issue']['title'] + '\n\n' + \
             self._payload['issue']['body'])
 
         return message
@@ -192,12 +192,12 @@ class GithubChatworkBot:
         """
         to_list = [self._payload['assignee']['login']]
 
-        message = cwmessage.ChatworkMessage
+        message = cwmessage.ChatworkMessage()
         message.setAddresseeList(self._buildAddresseeList(to_list, self._payload['issue']['body']))
         message.setTitle('Issue Assigned to ' + self._getChatworkUsericonByGithubName(self._payload['assignee']['login']) + \
             ' by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
             self._payload['issue']['html_url'])
-        message.setBody(str(self._payload['issue']['title']))
+        message.setBody(self._payload['issue']['title'])
 
         return message
 
@@ -213,11 +213,11 @@ class GithubChatworkBot:
             if assignee['login'] != self._payload['issue']['user']['login']:
                 to_list.append(assignee['login'])
 
-        message = cwmessage.ChatworkMessage
+        message = cwmessage.ChatworkMessage()
         message.setAddresseeList(self._buildAddresseeList(to_list, self._payload['issue']['body']))
         message.setTitle('Issue Closed by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
             self._payload['issue']['html_url'])
-        message.setBody(str(self._payload['issue']['title']))
+        message.setBody(self._payload['issue']['title'])
 
         return message
 
@@ -227,11 +227,12 @@ class GithubChatworkBot:
         To @username.
         :return: Object of class ChatworkMessage
         """
-        message = cwmessage.ChatworkMessage
+        message = cwmessage.ChatworkMessage()
         message.setAddresseeList(self._buildAddresseeList([], self._payload['pull_request']['body']))
         message.setTitle('PR Opened by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
             self._payload['pull_request']['html_url'])
-        message.setBody(str(self._payload['pull_request']['body']))
+        message.setBody(self._payload['pull_request']['title'] + '\n\n' + \
+            self._payload['pull_request']['body'])
 
         return message
 
@@ -247,11 +248,11 @@ class GithubChatworkBot:
             if assignee['login'] != self._payload['pull_request']['user']['login']:
                 to_list.append(assignee['login'])
 
-        message = cwmessage.ChatworkMessage
+        message = cwmessage.ChatworkMessage()
         message.setAddresseeList(self._buildAddresseeList(to_list))
         message.setTitle('PR Closed by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
             self._payload['pull_request']['html_url'])
-        message.setBody(str(self._payload['pull_request']['title']))
+        message.setBody(self._payload['pull_request']['title'])
 
         return message
 
@@ -267,11 +268,11 @@ class GithubChatworkBot:
             if assignee['login'] != self._payload['pull_request']['user']['login']:
                 to_list.append(assignee['login'])
 
-        message = cwmessage.ChatworkMessage
+        message = cwmessage.ChatworkMessage()
         message.setAddresseeList(self._buildAddresseeList(to_list, self._payload['comment']['body']))
         message.setTitle('PR Commented by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
             self._payload['comment']['html_url'])
-        message.setBody(str(self._payload['comment']['body']))
+        message.setBody(self._payload['comment']['body'])
 
         return message
 
@@ -281,11 +282,11 @@ class GithubChatworkBot:
         To: @username (API does not return commit author, maybe need additional request).
         :return: Object of class ChatworkMessage
         """
-        message = cwmessage.ChatworkMessage
+        message = cwmessage.ChatworkMessage()
         message.setAddresseeList(self._buildAddresseeList([], self._payload['comment']['body']))
         message.setTitle('Commit Commented by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
             self._payload['comment']['html_url'])
-        message.setBody(str(self._payload['comment']['body']))
+        message.setBody(self._payload['comment']['body'])
 
         return message
 
@@ -297,19 +298,19 @@ class GithubChatworkBot:
         """
         to_list = [self._payload['assignee']['login']]
 
-        message = cwmessage.ChatworkMessage
+        message = cwmessage.ChatworkMessage()
         message.setAddresseeList(self._buildAddresseeList(to_list))
         message.setTitle('PR Assigned to ' + self._getChatworkUsericonByGithubName(self._payload['assignee']['login']) + \
             ' by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
             self._payload['pull_request']['html_url'])
-        message.setBody(str(self._payload['pull_request']['title']))
+        message.setBody(self._payload['pull_request']['title'])
 
         return message
 
-    def _routeWebhookEventToRoom(self, body):
+    def _routeWebhookEventToRoom(self, message):
         """
         Route webhook event message (such as new issues, comments etc) to corresponding Chatwork room.
-        :param body: String - Content of message, that will be sent to Chatwork
+        :param message: Object of class ChatworkMessage, that will be sent to Chatwork
         """
         # Route message by repository name
         room_ids = []
@@ -317,7 +318,7 @@ class GithubChatworkBot:
             room_ids = self.repository_room_map[self._payload['repository']['name']]
 
         # Route message by addressee
-        addressee_list = self._getAddresseeListFromMessageContents(body)
+        addressee_list = message.getAddresseeList()
         for addressee in addressee_list:
             for github_account, account_settings in self.chatwork_github_account_map.items():
                 if addressee == account_settings['chatwork_account']:
@@ -326,7 +327,7 @@ class GithubChatworkBot:
         # Send message
         for room_id in room_ids:
             endpoint = '/rooms/' + str(room_id) + '/messages'
-            data = {"body": body}
+            data = {"body": message.getFormattedContents()}
             self.chatworkRequest(endpoint, data)
 
     def chatworkRequest(self, endpoint, data):
@@ -402,7 +403,7 @@ class GithubChatworkBot:
         # Check if message content includes special constructions and execute required actions
         self._processSpecialConstruction("create_chatwork_task", message)
 
-        self._routeWebhookEventToRoom(message.getFormattedContents())
+        self._routeWebhookEventToRoom(message)
 
     def _processSpecialConstruction(self, construction_type, message):
         """
