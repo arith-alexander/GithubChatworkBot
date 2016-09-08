@@ -96,10 +96,6 @@ class ChatworkMessage:
         if body_contents.find("[code]") != -1 and body_contents.find("[/code]") == -1:
             body_contents += "[/code]"
 
-        # If [/code] tag was cutted, then add it
-        if body_contents.find("[code]") != -1 and body_contents.find("[/code]") == -1:
-            body_contents += "[/code]"
-
         return body_contents + dots
 
     def _formatBody(self, body_contents):
