@@ -74,7 +74,7 @@ class ChatworkMessage:
         """
         Cut message body to designated length and add "..." at the end.
         :param body_contents: String - Body (inner contents) of the message.
-        :return: String - Cutted inner content of the message
+        :return: String - Trimmed inner content of the message
         """
         body_contents = str(body_contents)
 
@@ -86,17 +86,17 @@ class ChatworkMessage:
         # Cut to chatwork_message_max_len.
         body_contents = body_contents[:self._chatwork_message_max_len]
         # Use /n, whitespace,、 and 。as cut border.
-        cutted_body_contents = "".join(re.split("([\n 。　、]+)", body_contents)[:-1])
-        if cutted_body_contents and dots:
-            body_contents = cutted_body_contents
+        trimmed_body_contents = "".join(re.split("([\n 。　、]+)", body_contents)[:-1])
+        if trimmed_body_contents and dots:
+            body_contents = trimmed_body_contents
         # Cut excessive newlines at the end
         body_contents = body_contents.strip('\n')
 
-        # If [/code] tag was cutted, then add it
+        # If [/code] tag was trimmed, then add it
         if body_contents.find("[code]") != -1 and body_contents.find("[/code]") == -1:
             body_contents += "[/code]"
 
-        # If [/code] tag was cutted, then add it
+        # If [/code] tag was trimmed, then add it
         if body_contents.find("[code]") != -1 and body_contents.find("[/code]") == -1:
             body_contents += "[/code]"
 
