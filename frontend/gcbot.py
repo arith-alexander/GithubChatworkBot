@@ -400,6 +400,9 @@ class GithubChatworkBot:
         else:
             self._log('Execution failed: event handler is not set.', 'CRITICAL')
 
+        if isinstance(message, str):
+            self._log('"message" is string', 'CRITICAL')
+
         # Check if message content includes special constructions and execute required actions
         self._processSpecialConstruction("create_chatwork_task", message)
 
