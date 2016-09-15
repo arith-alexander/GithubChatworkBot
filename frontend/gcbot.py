@@ -94,7 +94,7 @@ class GithubChatworkBot:
         except KeyError:
             self._log('Payload format is wrong.', 'CRITICAL')
 
-        self._log(github_post_data['payload'].value, 'INFO')
+        self._log(github_post_data['payload'].value.encode('utf_8'), 'INFO')
         self._payload = json.loads(github_post_data['payload'].value)
 
     def _getChatworkUsericonByGithubName(self, github_account):
