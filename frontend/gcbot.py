@@ -164,7 +164,8 @@ class GithubChatworkBot:
         message = cwmessage.ChatworkMessage()
         message.setAddresseeList(self._buildAddresseeList(to_list, self._payload['comment']['body']))
         message.setTitle('Issue Commented by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
-                self._payload['comment']['html_url'])
+                         self._payload['issue']['title'] + '\n' + \
+                         self._payload['comment']['html_url'])
         message.setBody(self._payload['comment']['body'])
 
         return message
@@ -271,7 +272,8 @@ class GithubChatworkBot:
         message = cwmessage.ChatworkMessage()
         message.setAddresseeList(self._buildAddresseeList(to_list, self._payload['comment']['body']))
         message.setTitle('PR Commented by ' + self._getChatworkUsericonByGithubName(self._payload['sender']['login']) + '\n' + \
-            self._payload['comment']['html_url'])
+                         self._payload['pull_request']['title'] + '\n' + \
+                         self._payload['comment']['html_url'])
         message.setBody(self._payload['comment']['body'])
 
         return message
