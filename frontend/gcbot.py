@@ -499,7 +499,7 @@ class GithubChatworkBot:
             # Search for PRs with title containing search_patterns, defined in config
             for search_pattern in params["search_patterns"]:
                 for pr in github.search_issues(search_pattern + " state:open type:pr in:title " + repository_str, sort="updated", order="asc"):
-                    result += pr.title + "\n" + pr.html_url + "\n"
+                    result += pr.title + "\n" + pr.html_url + "[hr]"
             # Send notification to Chatwork
             if result:
                 result = "[info][title]Ready PR is found[/title]" + result + "[/info]"
