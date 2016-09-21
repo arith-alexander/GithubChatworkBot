@@ -485,7 +485,7 @@ class GithubChatworkBot:
         :param params: Array - Additional parameters (vary from task to task).
         :return: Any - Execution result.
         """
-        result = ""
+        result = []
 
         # Send list of ready PRs to designated Chatwork room, if present.
         if cron_task_name == "ready_pr":
@@ -498,12 +498,23 @@ class GithubChatworkBot:
                 repository_str += " repo:" + repository
             # Search for PRs with title containing search_patterns, defined in config
             for search_pattern in params["search_patterns"]:
-                for pr in github.search_issues(search_pattern + " state:open type:pr in:title " + repository_str, sort="updated", order="asc"):
-                    result += pr.title + "\n" + pr.html_url + "[hr]"
+                pull_requests = {}
+
+                for pr in github.search_issues(search_pattern + " state:open type:pr in:title " + repository_str):
+                    pull_request = pr
+                    """:type: github.Issue.Issue"""
+                    pull_requests[pull_request.number] = pull_request.title + "\n" + pull_request.html_url
+
+                if pull_requests:
+                    prs = sorted(pull_requests.items(), key=lambda x: x[0])
+                    for number, body in prs:
+                        result.append(body)
+
             # Send notification to Chatwork
             if result:
-                result = "[info][title]Ready PR is found[/title]" + result + "[/info]"
-                self.chatworkRequest('/rooms/' + params["room_id"] + '/messages', {"body": result})
+                body = '[hr]'.join(result)
+                body = "[info][title]Ready PR is found[/title]" + body + "[/info]"
+                self.chatworkRequest('/rooms/' + params["room_id"] + '/messages', {"body": body})
             return result
         else:
             return "Cron task handler not found"
