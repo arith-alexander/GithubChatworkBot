@@ -485,7 +485,6 @@ class GithubChatworkBot:
         :param params: Array - Additional parameters (vary from task to task).
         :return: Any - Execution result.
         """
-        result = []
 
         # Send list of ready PRs to designated Chatwork room, if present.
         if cron_task_name == "ready_pr":
@@ -493,7 +492,10 @@ class GithubChatworkBot:
             if not self.github_token:
                 return "Github API key not found"
             github = Github(self.github_token)
+            
             repository_str = ""
+            result = []
+
             for repository in params["repositories"]:
                 repository_str += " repo:" + repository
             # Search for PRs with title containing search_patterns, defined in config
