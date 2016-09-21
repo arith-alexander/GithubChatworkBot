@@ -515,6 +515,6 @@ class GithubChatworkBot:
                 body = '[hr]'.join(result)
                 body = "[info][title]Ready PR is found[/title]" + body + "[/info]"
                 self.chatworkRequest('/rooms/' + params["room_id"] + '/messages', {"body": body})
-            return result
+            return body
         else:
             return "Cron task handler not found"
