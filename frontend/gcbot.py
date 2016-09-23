@@ -492,7 +492,7 @@ class GithubChatworkBot:
             if not self.github_token:
                 return "Github API key not found"
             github = Github(self.github_token)
-            
+
             repository_str = ""
             result = []
 
@@ -505,7 +505,7 @@ class GithubChatworkBot:
                 for pr in github.search_issues(search_pattern + " state:open type:pr in:title " + repository_str):
                     pull_request = pr
                     """:type: github.Issue.Issue"""
-                    pull_requests[pull_request.number] = pull_request.title + "\n" + pull_request.html_url
+                    pull_requests[pull_request.html_url] = pull_request.title + "\n" + pull_request.html_url
 
                 if pull_requests:
                     prs = sorted(pull_requests.items(), key=lambda x: x[0])
