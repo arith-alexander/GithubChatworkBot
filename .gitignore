@@ -6,3 +6,7 @@ logs/errors/*.txt
 backend/__pycache__/
 frontend/__pycache__/
 .python-version
+*.db
+pingerlog.txt
+*.bck
+*.test
