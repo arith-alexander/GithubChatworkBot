@@ -1,7 +1,7 @@
 # WSGI entry script. Set path to it in Apache config directive WSGIScriptAlias.
 
 import sys
-sys.path.insert(0, '/usr/scripts/GithubChatworkBot/backend')
+sys.path.insert(0, '/usr/scripts/GithubChatworkBot/frontend')
 import index
 import cgi
 
@@ -14,7 +14,9 @@ def application(env, start_response):
 			start_response('200 OK', [('Content-Type','text/html')])
 			return []
 
+	status = '200 OK'
 	output = str.encode(index.main(env))
-	response_headers = [('Content-type', 'text/html'), ('Content-Length', str(len(output)))]
-	start_response('200 OK', response_headers)
+	response_headers = [('Content-type', 'text/html'),
+		('Content-Length', str(len(output)))]
+	start_response(status, response_headers)
 	return [output]
